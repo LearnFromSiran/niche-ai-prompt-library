@@ -298,6 +298,14 @@ export default function App() {
   const [wizardConstraints, setWizardConstraints] = useState('Under 200 words, highly professional, no buzzwords');
   const [wizardGeneratedPrompt, setWizardGeneratedPrompt] = useState('');
 
+  // Guided launch studio state
+  const [launchBuyer, setLaunchBuyer] = useState('solo immigration lawyers serving Japanese-speaking clients');
+  const [launchPain, setLaunchPain] = useState('they waste hours rewriting intake notes, follow-up emails, and document request messages');
+  const [launchBudget, setLaunchBudget] = useState('$49-$199/month if it saves 3+ hours weekly');
+  const [launchDelivery, setLaunchDelivery] = useState('AI intake assistant + prompt workflow + approval checklist');
+  const [launchChannel, setLaunchChannel] = useState('LinkedIn, local business groups, cold email, and partner webinars');
+  const [launchBrief, setLaunchBrief] = useState('');
+
   // Contact Form State
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -632,6 +640,89 @@ Constraints, Guardrails & Nuance details: ${wizardConstraints.trim()}`;
     setWizardStep(1);
     setWizardContext('');
     setWizardTask('');
+  };
+
+  const generateLaunchBrief = () => {
+    const buyer = launchBuyer.trim() || 'a specific business buyer';
+    const pain = launchPain.trim() || 'a costly manual workflow';
+    const budget = launchBudget.trim() || 'a clear monthly budget';
+    const delivery = launchDelivery.trim() || 'a simple AI workflow';
+    const channel = launchChannel.trim() || 'direct outreach and niche communities';
+    const urgencyScore = /hour|cost|lost|manual|delay|risk|client|revenue/i.test(pain) ? 8 : 6;
+    const budgetScore = /\$|month|mo|budget|pay|price/i.test(budget) ? 8 : 5;
+    const buildScore = /assistant|prompt|workflow|checklist|template|automation/i.test(delivery) ? 8 : 6;
+    const totalScore = Math.round(((urgencyScore + budgetScore + buildScore) / 30) * 100);
+
+    const brief = `# AI Micro-Niche Launch Brief
+
+## Niche
+${buyer}
+
+## Pain Worth Solving
+${pain}
+
+## Commercial Signal
+${budget}
+
+## Smallest Paid Offer
+${delivery}
+
+## Niche Score
+${totalScore}/100
+
+Why: urgency ${urgencyScore}/10, budget clarity ${budgetScore}/10, build simplicity ${buildScore}/10.
+
+## Paid Offer
+We help ${buyer} solve "${pain}" using ${delivery}, so they can save time, respond faster, and reduce operational drag without hiring extra staff.
+
+## Pricing
+- Starter: $19 - template pack and checklist
+- Pro: $49/month - reusable workflow, examples, and launch pack
+- Done-with-you: $299 - setup, customization, and first workflow review
+
+## Landing Page Hero
+Headline: Stop losing hours to ${pain}.
+Subheadline: Launch a practical AI workflow for ${buyer} using ${delivery}. Validate demand before you build a full SaaS.
+CTA: Get the launch pack
+
+## First Outreach Message
+Hi [Name], I am testing a small AI workflow for ${buyer}. It helps with ${pain}. If I showed you a 3-minute demo, would you tell me whether this is worth paying for?
+
+## 7-Day Validation Plan
+Day 1: List 30 buyers from ${channel}.
+Day 2: Send 15 short validation messages.
+Day 3: Interview 3 buyers about the workflow pain.
+Day 4: Create one demo using the prompt workflow.
+Day 5: Ask for preorders or pilot users.
+Day 6: Refine price and guarantee.
+Day 7: Publish the offer page and send 20 follow-ups.
+
+## Recommended Stack
+- Landing page: Carrd, Framer, or Notion
+- Checkout: Gumroad or Lemon Squeezy
+- Email capture: Beehiiv or ConvertKit
+- Automation: Zapier, Make, or n8n
+- AI execution: ChatGPT, Claude, or Gemini
+`;
+
+    setLaunchBrief(brief);
+    showToast('Generated launch brief. Copy or export it before building.');
+  };
+
+  const exportLaunchBrief = () => {
+    if (!launchBrief) {
+      showToast('Generate the launch brief first.');
+      return;
+    }
+
+    const element = document.createElement('a');
+    const file = new Blob([launchBrief], { type: 'text/markdown' });
+    element.href = URL.createObjectURL(file);
+    element.download = 'AI_Micro_Niche_Launch_Brief.md';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    showToast('Downloaded AI micro-niche launch brief.');
   };
 
   // ==========================================
@@ -1175,30 +1266,66 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
           ============================================================================ */}
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* WIZARD BUILDER HERO CARD */}
+        {/* GUIDED AI NICHE LAUNCH WIZARD */}
         {activeTab === 'home' && (
-          <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-950 rounded-3xl p-6 md:p-8 text-white shadow-xl mb-12 border border-indigo-500/20 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-4 -translate-y-4">
-              <svg className="w-48 h-48 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19 13H5v-2h14v2z" />
-              </svg>
-            </div>
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
-              <div>
-                <span className="bg-indigo-400/10 text-indigo-300 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-400/20">
-                  Custom Prompt Engineering
-                </span>
-                <h3 className="text-2xl md:text-3xl font-black mt-3 mb-2">Can't find a template that matches your criteria?</h3>
-                <p className="text-slate-450 text-xs md:text-sm max-w-xl leading-relaxed">
-                  Utilize our advanced Prompt Builder Wizard to engineer tailored instructions based on the absolute highest standards of role-based instructions.
-                </p>
+          <div className="bg-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-xl mb-12 border border-emerald-500/20 relative overflow-hidden">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-5">
+                <div>
+                  <span className="bg-emerald-400/10 text-emerald-300 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-400/20">
+                    Guided launch wizard
+                  </span>
+                  <h3 className="text-2xl md:text-3xl font-black mt-3 mb-2">Build one sellable AI niche offer before you code anything.</h3>
+                  <p className="text-slate-400 text-xs md:text-sm max-w-xl leading-relaxed">
+                    Enter a buyer, painful workflow, budget signal, and delivery model. The studio generates a launch brief with scoring, pricing, landing copy, outreach, validation plan, and tool stack.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Buyer</label>
+                    <input value={launchBuyer} onChange={(e) => setLaunchBuyer(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Budget Signal</label>
+                    <input value={launchBudget} onChange={(e) => setLaunchBudget(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Painful Manual Workflow</label>
+                    <input value={launchPain} onChange={(e) => setLaunchPain(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Paid Delivery</label>
+                    <input value={launchDelivery} onChange={(e) => setLaunchDelivery(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Acquisition Channel</label>
+                    <input value={launchChannel} onChange={(e) => setLaunchChannel(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={generateLaunchBrief} className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Generate Launch Brief
+                  </button>
+                  <button onClick={exportLaunchBrief} className="bg-slate-800 hover:bg-slate-700 text-white font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Export MD
+                  </button>
+                  <button onClick={() => handleCopyText(launchBrief || 'Generate the launch brief first.', 'Launch brief copied.')} className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Copy
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => { setActiveTab('builder'); setWizardStep(1); }}
-                className="whitespace-nowrap bg-indigo-500 hover:bg-indigo-400 text-white font-extrabold px-5 py-3.5 rounded-xl transition-all shadow-md hover:shadow-indigo-500/20 text-xs tracking-wider uppercase flex items-center gap-2"
-              >
-                Launch Prompt Architect
-              </button>
+
+              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 min-h-[420px] max-h-[520px] overflow-y-auto">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Launch Brief Preview</span>
+                  <span className="text-[10px] font-black text-emerald-400">{launchBrief ? 'Generated' : 'Ready'}</span>
+                </div>
+                <pre className="whitespace-pre-wrap text-xs leading-relaxed text-slate-300 font-mono">
+                  {launchBrief || 'Fill the fields and click "Generate Launch Brief" to produce a concrete niche score, offer, landing page hook, outreach message, 7-day validation plan, and recommended stack.'}
+                </pre>
+              </div>
             </div>
           </div>
         )}
@@ -1886,8 +2013,8 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                       <li>✓ Removes sponsor placements</li>
                       <li>✓ Unlocks premium formulas</li>
                       <li>✓ Full launch pack exports</li>
-                      <li>✓ Premium funnel and SEO blueprints</li>
-                      <li>✓ Better for paid client work</li>
+                      <li>✓ Premium funnel, SEO, HR, and agency blueprints</li>
+                      <li>✓ Better for selling client-ready AI workflow kits</li>
                     </ul>
                     <a href={gumroadLink} target="_blank" rel="sponsored noopener noreferrer" className="block text-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-widest py-3 rounded-xl">
                       Upgrade to Pro
@@ -2152,26 +2279,26 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
               <span className="text-4xl block animate-bounce">PRO</span>
               <h3 className="text-xl font-black text-white">Unlock Niche Prompts PRO</h3>
               <p className="text-xs text-slate-450 leading-relaxed max-w-xs mx-auto">
-                Get full access to highly optimized, paywalled premium blueprints configured by master prompt engineers.
+                Unlock premium launch assets, remove sponsor placements, and export more complete playbooks for client-ready AI workflow offers.
               </p>
             </div>
 
             <div className="space-y-3 text-xs bg-slate-950 p-4 rounded-2xl border border-slate-850 text-left">
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400 font-extrabold">✓</span>
-                <span>Unlocks all <strong>Real Estate Facebook Funnels</strong></span>
+                <span>Unlocks <strong>premium launch and funnel blueprints</strong></span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400 font-extrabold">✓</span>
-                <span>Unlocks <strong>Employee Risk Audit &amp; HR Blueprints</strong></span>
+                <span>Removes <strong>sponsor placements</strong> from the workspace</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400 font-extrabold">✓</span>
-                <span>Includes <strong>High-Ticket Agency Sales copy formulas</strong></span>
+                <span>Includes <strong>high-ticket agency sales copy formulas</strong></span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-400 font-extrabold">✓</span>
-                <span>Unlimited exports &amp; Sandbox playbooks runs</span>
+                <span>Unlimited launch pack exports and quality audits</span>
               </div>
             </div>
 
