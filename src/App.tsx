@@ -193,6 +193,109 @@ const CURATED_TOOLS = [
   }
 ];
 
+const VALIDATED_MICRO_NICHES = [
+  {
+    title: 'AI Intake Follow-Up Assistant',
+    buyer: 'solo immigration lawyers serving Japanese-speaking clients',
+    pain: 'they waste hours rewriting intake notes, follow-up emails, and document request messages',
+    budget: '$49-$199/month if it saves 3+ hours weekly',
+    delivery: 'AI intake assistant + prompt workflow + approval checklist',
+    channel: 'LinkedIn, local business groups, cold email, and partner webinars',
+    score: 84,
+    free: true
+  },
+  {
+    title: 'AI Listing Copy Kit for Boutique Realtors',
+    buyer: 'solo real estate agents with 3-10 active listings per month',
+    pain: 'they need polished listing copy, social teasers, and open-house follow-ups but rewrite everything manually',
+    budget: '$29-$99/month for faster listing launches',
+    delivery: 'listing copy generator + social captions + follow-up email workflow',
+    channel: 'local realtor Facebook groups, Instagram DMs, and brokerage newsletters',
+    score: 78,
+    free: true
+  },
+  {
+    title: 'AI Review Reply System for Dental Clinics',
+    buyer: 'small dental clinics with 1-5 locations',
+    pain: 'they ignore or delay Google review replies, hurting local trust and search conversion',
+    budget: '$49-$149/month if it improves reputation workflow consistency',
+    delivery: 'review response prompt system + escalation rules + monthly reporting template',
+    channel: 'cold email to clinic managers, local SEO agencies, and dental practice groups',
+    score: 82,
+    free: true
+  },
+  {
+    title: 'AI Job Description Cleaner for HR Consultants',
+    buyer: 'independent HR consultants serving small businesses',
+    pain: 'they spend too much time rewriting biased, bloated, unclear job descriptions',
+    budget: '$39-$129/month for faster client delivery',
+    delivery: 'job description rewrite workflow + bias checklist + interview rubric generator',
+    channel: 'LinkedIn posts, HR communities, and direct outreach to fractional HR consultants',
+    score: 76,
+    free: true
+  },
+  {
+    title: 'AI SOP Builder for Cleaning Companies',
+    buyer: 'residential cleaning businesses with 5-30 cleaners',
+    pain: 'owners train staff verbally and lack consistent checklists for recurring jobs',
+    budget: '$49-$199/month if it reduces training mistakes',
+    delivery: 'SOP generator + room-by-room checklist templates + trainer handoff pack',
+    channel: 'cleaning business Facebook groups, YouTube comments, and local business communities',
+    score: 86,
+    free: false
+  },
+  {
+    title: 'AI Proposal Builder for Web Design Freelancers',
+    buyer: 'freelance web designers selling $1k-$5k projects',
+    pain: 'they lose deals because proposals are slow, vague, or not outcome-focused',
+    budget: '$19-$79/month or $49 template pack',
+    delivery: 'proposal generator + scope checklist + objection handling email sequence',
+    channel: 'Twitter/X build-in-public, freelance Discords, and cold DM replies',
+    score: 81,
+    free: false
+  },
+  {
+    title: 'AI Parent Update Writer for Tutoring Centers',
+    buyer: 'local tutoring centers with 30-200 students',
+    pain: 'staff struggle to write consistent parent progress updates after sessions',
+    budget: '$49-$149/month if it saves admin time and improves parent retention',
+    delivery: 'progress update generator + tone controls + retention risk flags',
+    channel: 'education owner groups, local tutoring directories, and email outreach',
+    score: 83,
+    free: false
+  },
+  {
+    title: 'AI Menu Description Optimizer for Small Restaurants',
+    buyer: 'independent restaurants updating menus seasonally',
+    pain: 'menu descriptions are generic and do not highlight margin-friendly dishes',
+    budget: '$29-$99 per menu refresh',
+    delivery: 'menu copy optimizer + upsell language + dietary tag checklist',
+    channel: 'local restaurant associations, Instagram DMs, and food service consultants',
+    score: 74,
+    free: false
+  },
+  {
+    title: 'AI Client Recap Writer for Fitness Coaches',
+    buyer: 'online fitness coaches managing 20-100 clients',
+    pain: 'they spend evenings writing check-in recaps, habit notes, and accountability messages',
+    budget: '$29-$99/month if it saves 5+ hours weekly',
+    delivery: 'client check-in recap workflow + tone presets + risk flag checklist',
+    channel: 'fitness coach communities, Instagram, and coaching software groups',
+    score: 85,
+    free: false
+  },
+  {
+    title: 'AI Grant Drafting Assistant for Nonprofit Consultants',
+    buyer: 'grant writers and nonprofit consultants serving small nonprofits',
+    pain: 'they repeatedly rewrite organization summaries, impact narratives, and budget justifications',
+    budget: '$99-$299/month if it speeds up grant draft preparation',
+    delivery: 'grant narrative prompt system + evidence checklist + reviewer risk audit',
+    channel: 'LinkedIn, nonprofit consultant directories, and grant writer associations',
+    score: 88,
+    free: false
+  }
+];
+
 // ============================================================================
 // UTILITY HELPERS
 // ============================================================================
@@ -723,6 +826,21 @@ Day 7: Publish the offer page and send 20 follow-ups.
     element.click();
     document.body.removeChild(element);
     showToast('Downloaded AI micro-niche launch brief.');
+  };
+
+  const loadMicroNiche = (niche) => {
+    if (!niche.free && !isUnlocked) {
+      setShowPaywallModal(true);
+      return;
+    }
+
+    setLaunchBuyer(niche.buyer);
+    setLaunchPain(niche.pain);
+    setLaunchBudget(niche.budget);
+    setLaunchDelivery(niche.delivery);
+    setLaunchChannel(niche.channel);
+    setLaunchBrief('');
+    showToast(`Loaded ${niche.title}. Generate the launch brief next.`);
   };
 
   // ==========================================
@@ -1370,6 +1488,52 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
           </div>
         )}
 
+        {activeTab === 'home' && (
+          <div className="mb-12 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Validated starting points</span>
+                <h3 className="text-xl font-black text-white mt-1">Start from a micro-niche with real buyer pain.</h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-2xl">Pick an idea, generate a launch brief, then validate demand before building. Free examples are open; Pro examples are stronger niche kits.</p>
+              </div>
+              <button onClick={() => setActiveTab('pricing')} className="text-[10px] font-black uppercase tracking-widest text-amber-300 underline">
+                Unlock all niche kits
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {VALIDATED_MICRO_NICHES.map(niche => (
+                <button
+                  key={niche.title}
+                  onClick={() => loadMicroNiche(niche)}
+                  className={`bg-slate-900 border rounded-2xl p-5 text-left transition-all hover:scale-[1.01] ${
+                    niche.free || isUnlocked ? 'border-slate-800 hover:border-emerald-500/35' : 'border-amber-400/25 hover:border-amber-400/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="font-black text-white text-sm leading-snug">{niche.title}</h4>
+                      <p className="text-xs text-slate-400 mt-2 leading-relaxed line-clamp-2">{niche.buyer}</p>
+                    </div>
+                    <span className={`text-[10px] font-black px-2 py-1 rounded-full ${
+                      niche.score >= 85 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-300'
+                    }`}>
+                      {niche.score}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-3 leading-relaxed line-clamp-2">{niche.pain}</p>
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
+                    <span className="text-[10px] text-slate-500 font-bold">{niche.budget}</span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${niche.free || isUnlocked ? 'text-emerald-400' : 'text-amber-300'}`}>
+                      {niche.free || isUnlocked ? 'Load idea' : 'Pro'}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'home' && !isUnlocked && (
           <div className="mb-12 grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
@@ -2012,6 +2176,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                     <ul className="space-y-2 text-xs text-slate-300">
                       <li>✓ Removes sponsor placements</li>
                       <li>✓ Unlocks premium formulas</li>
+                      <li>✓ Unlocks premium validated micro-niche kits</li>
                       <li>✓ Full launch pack exports</li>
                       <li>✓ Premium funnel, SEO, HR, and agency blueprints</li>
                       <li>✓ Better for selling client-ready AI workflow kits</li>

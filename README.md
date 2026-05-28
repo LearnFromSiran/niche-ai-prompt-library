@@ -6,6 +6,7 @@ A premium-style React app for finding AI micro-niches, generating paid offers, a
 
 - AI micro-niche validation workflows
 - Guided AI niche launch wizard
+- 10 prebuilt AI micro-niche examples
 - Paid offer positioning prompts
 - Commercial readiness scoring
 - Smart variable examples
