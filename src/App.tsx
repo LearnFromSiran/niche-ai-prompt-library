@@ -409,6 +409,39 @@ export default function App() {
   const [launchChannel, setLaunchChannel] = useState('LinkedIn, local business groups, cold email, and partner webinars');
   const [launchBrief, setLaunchBrief] = useState('');
 
+  const launchScorecard = useMemo(() => {
+    const buyer = launchBuyer.trim();
+    const pain = launchPain.trim();
+    const budget = launchBudget.trim();
+    const delivery = launchDelivery.trim();
+    const channel = launchChannel.trim();
+
+    const buyerScore = Math.min(10, 4 + (buyer.length > 24 ? 2 : 0) + (/solo|small|clinic|agency|consultant|owner|freelance|local|center|lawyer|realtor|coach/i.test(buyer) ? 2 : 0) + (/\d|with|serving|for/i.test(buyer) ? 2 : 0));
+    const painScore = Math.min(10, 3 + (pain.length > 45 ? 2 : 0) + (/hour|cost|lost|manual|delay|risk|client|revenue|rewrite|mistake|admin|training/i.test(pain) ? 3 : 0) + (/weekly|daily|month|repeated|recurring|every/i.test(pain) ? 2 : 0));
+    const budgetScore = Math.min(10, 3 + (/\$|\d/.test(budget) ? 3 : 0) + (/month|mo|budget|pay|price|preorder|pilot/i.test(budget) ? 2 : 0) + (/\$[4-9]\d|\$[1-9]\d{2,}/.test(budget) ? 2 : 0));
+    const deliveryScore = Math.min(10, 4 + (/assistant|prompt|workflow|checklist|template|automation|generator|system/i.test(delivery) ? 3 : 0) + (/approval|rules|report|rubric|export|handoff|examples/i.test(delivery) ? 2 : 0) + (delivery.length > 35 ? 1 : 0));
+    const channelScore = Math.min(10, 3 + (/linkedin|email|facebook|instagram|community|group|directory|partner|webinar|dm|newsletter/i.test(channel) ? 3 : 0) + ((channel.match(/,| and /g) || []).length >= 2 ? 2 : 0) + (channel.length > 35 ? 2 : 0));
+
+    const score = Math.round((buyerScore * 0.2 + painScore * 0.28 + budgetScore * 0.22 + deliveryScore * 0.16 + channelScore * 0.14) * 10);
+    const verdict = score >= 82 ? 'Pre-sell now' : score >= 68 ? 'Validate first' : 'Refine niche';
+    const risk = score >= 82 ? 'Main risk: execution and distribution consistency.' : score >= 68 ? 'Main risk: weak proof of willingness to pay.' : 'Main risk: buyer, pain, or budget is still too vague.';
+    const nextAction = score >= 82 ? 'Send 20 validation messages and ask for 3 paid pilots.' : score >= 68 ? 'Interview 5 buyers before building a full product.' : 'Narrow the buyer and rewrite the pain as a costly repeated workflow.';
+
+    return {
+      score,
+      verdict,
+      risk,
+      nextAction,
+      dimensions: [
+        { label: 'Buyer clarity', value: buyerScore, note: 'Specific reachable buyer' },
+        { label: 'Pain urgency', value: painScore, note: 'Repeated costly workflow' },
+        { label: 'Budget proof', value: budgetScore, note: 'Clear willingness to pay' },
+        { label: 'MVP simplicity', value: deliveryScore, note: 'Small paid deliverable' },
+        { label: 'Reachability', value: channelScore, note: 'Known acquisition path' }
+      ]
+    };
+  }, [launchBuyer, launchPain, launchBudget, launchDelivery, launchChannel]);
+
   // Contact Form State
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -751,10 +784,14 @@ Constraints, Guardrails & Nuance details: ${wizardConstraints.trim()}`;
     const budget = launchBudget.trim() || 'a clear monthly budget';
     const delivery = launchDelivery.trim() || 'a simple AI workflow';
     const channel = launchChannel.trim() || 'direct outreach and niche communities';
-    const urgencyScore = /hour|cost|lost|manual|delay|risk|client|revenue/i.test(pain) ? 8 : 6;
-    const budgetScore = /\$|month|mo|budget|pay|price/i.test(budget) ? 8 : 5;
-    const buildScore = /assistant|prompt|workflow|checklist|template|automation/i.test(delivery) ? 8 : 6;
-    const totalScore = Math.round(((urgencyScore + budgetScore + buildScore) / 30) * 100);
+    const { score, verdict, risk, nextAction, dimensions } = launchScorecard;
+    const scoreRows = dimensions.map(item => `- ${item.label}: ${item.value}/10 - ${item.note}`).join('\n');
+    const guarantee = score >= 82
+      ? 'First workflow delivered in 48 hours or the pilot is free.'
+      : 'Pay only after the first workflow saves measurable time.';
+    const preSellAsk = score >= 82
+      ? 'Would you pay for a 7-day pilot if I set this up with your exact workflow?'
+      : 'Can I watch how you handle this workflow today and show you a rough improvement?';
 
     const brief = `# AI Micro-Niche Launch Brief
 
@@ -770,10 +807,13 @@ ${budget}
 ## Smallest Paid Offer
 ${delivery}
 
-## Niche Score
-${totalScore}/100
+## Demand Score
+${score}/100 - ${verdict}
 
-Why: urgency ${urgencyScore}/10, budget clarity ${budgetScore}/10, build simplicity ${buildScore}/10.
+${scoreRows}
+
+Risk: ${risk}
+Next move: ${nextAction}
 
 ## Paid Offer
 We help ${buyer} solve "${pain}" using ${delivery}, so they can save time, respond faster, and reduce operational drag without hiring extra staff.
@@ -783,13 +823,29 @@ We help ${buyer} solve "${pain}" using ${delivery}, so they can save time, respo
 - Pro: $49/month - reusable workflow, examples, and launch pack
 - Done-with-you: $299 - setup, customization, and first workflow review
 
+## Risk Reversal
+${guarantee}
+
 ## Landing Page Hero
 Headline: Stop losing hours to ${pain}.
 Subheadline: Launch a practical AI workflow for ${buyer} using ${delivery}. Validate demand before you build a full SaaS.
 CTA: Get the launch pack
 
 ## First Outreach Message
-Hi [Name], I am testing a small AI workflow for ${buyer}. It helps with ${pain}. If I showed you a 3-minute demo, would you tell me whether this is worth paying for?
+Hi [Name], I am testing a small AI workflow for ${buyer}. It helps with ${pain}. ${preSellAsk}
+
+## Buyer Interview Questions
+1. How often does this workflow happen in a normal week?
+2. What happens when it is delayed, skipped, or done poorly?
+3. What are you using today to solve it?
+4. Who approves paying for a tool or service like this?
+5. If this saved 3 hours this week, what price would feel reasonable?
+
+## Kill Criteria
+- Fewer than 3 buyers agree to a demo after 30 targeted messages.
+- Buyers say the pain is annoying but not costly.
+- No buyer can name an existing workaround, staff cost, or missed revenue tied to the pain.
+- Nobody accepts a paid pilot, preorder, or specific follow-up date.
 
 ## 7-Day Validation Plan
 Day 1: List 30 buyers from ${channel}.
@@ -1397,6 +1453,34 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                   <p className="text-slate-400 text-xs md:text-sm max-w-xl leading-relaxed">
                     Enter a buyer, painful workflow, budget signal, and delivery model. The studio generates a launch brief with scoring, pricing, landing copy, outreach, validation plan, and tool stack.
                   </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-3">
+                  <div className={`rounded-2xl border p-4 ${
+                    launchScorecard.score >= 82 ? 'bg-emerald-500/10 border-emerald-400/30' : launchScorecard.score >= 68 ? 'bg-amber-500/10 border-amber-400/30' : 'bg-rose-500/10 border-rose-400/30'
+                  }`}>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Demand Score</span>
+                    <div className="text-4xl font-black text-white mt-1">{launchScorecard.score}</div>
+                    <div className={`text-[10px] font-black uppercase tracking-widest mt-1 ${
+                      launchScorecard.score >= 82 ? 'text-emerald-300' : launchScorecard.score >= 68 ? 'text-amber-300' : 'text-rose-300'
+                    }`}>{launchScorecard.verdict}</div>
+                  </div>
+                  <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {launchScorecard.dimensions.map(item => (
+                        <div key={item.label}>
+                          <div className="flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            <span>{item.label}</span>
+                            <span className="text-slate-300">{item.value}/10</span>
+                          </div>
+                          <div className="h-1.5 bg-slate-800 rounded-full mt-1 overflow-hidden">
+                            <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${item.value * 10}%` }}></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-3 leading-relaxed">{launchScorecard.risk}</p>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
