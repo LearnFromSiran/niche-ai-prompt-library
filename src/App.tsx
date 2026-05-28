@@ -724,6 +724,48 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
     return filteredPrompts.filter(p => p.category === activeTab && !p.isPremium);
   }, [filteredPrompts, activeTab, allPrompts, favorites]);
 
+  const buildAffiliateUrl = (link: string) => {
+    const separator = link.includes('?') ? '&' : '?';
+    return `${link}${separator}ref=${encodeURIComponent(affiliateTag)}`;
+  };
+
+  const renderSponsorSlot = (placement: string) => {
+    if (isUnlocked) return null;
+
+    return (
+      <div className="bg-slate-900 border border-amber-400/20 rounded-2xl p-4 text-left space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[9px] font-black uppercase tracking-widest text-amber-300 bg-amber-400/10 border border-amber-400/20 px-2 py-1 rounded-full">
+            Sponsored
+          </span>
+          <span className="text-[10px] text-slate-500">{placement}</span>
+        </div>
+        <div>
+          <h4 className="text-sm font-black text-white">Promote an AI tool, course, or template here</h4>
+          <p className="text-xs text-slate-400 leading-relaxed mt-1">
+            This freemium slot is designed for affiliate links, sponsor deals, newsletter swaps, or your own paid prompt bundle.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href={gumroadLink}
+            target="_blank"
+            rel="sponsored noopener noreferrer"
+            className="bg-amber-400 hover:bg-amber-300 text-slate-950 text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl"
+          >
+            Sponsor this slot
+          </a>
+          <button
+            onClick={() => setActiveTab('tools')}
+            className="bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl"
+          >
+            View affiliate tools
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 antialiased font-sans selection:bg-indigo-500/30 selection:text-white">
       
@@ -786,6 +828,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                 { id: 'marketing', label: 'Marketers' },
                 { id: 'premium', label: 'Pro Formulas' },
                 { id: 'tools', label: 'AI Software Directory' },
+                { id: 'pricing', label: 'Pricing' },
                 { id: 'contact', label: 'Contact Curation' }
               ].map(tab => (
                 <button
@@ -858,6 +901,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
           { id: 'marketing', label: 'Marketing' },
           { id: 'premium', label: 'Premium Pro' },
           { id: 'tools', label: 'AI Directory' },
+          { id: 'pricing', label: 'Pricing' },
           { id: 'contact', label: 'Contact' }
         ].map(tab => (
           <button
@@ -1113,6 +1157,15 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
               <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Launch pack export</span>
             </div>
 
+            {!isUnlocked && (
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-800 px-2.5 py-1 rounded-full">Free plan: sponsor supported</span>
+                <button onClick={() => setActiveTab('pricing')} className="text-[10px] font-black uppercase tracking-widest text-amber-300 underline">
+                  Remove ads with Pro
+                </button>
+              </div>
+            )}
+
           </div>
         </section>
       )}
@@ -1187,6 +1240,24 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                 </span>
               </button>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'home' && !isUnlocked && (
+          <div className="mb-12 grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              {renderSponsorSlot('Homepage native ad')}
+            </div>
+            <div className="bg-slate-900 border border-emerald-500/20 rounded-2xl p-4 space-y-3">
+              <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Affiliate funnel</span>
+              <h4 className="font-black text-white text-sm">Earn from tools users already need</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                The free plan routes users to AI tools, hosting, checkout, and automation products with your referral tag.
+              </p>
+              <button onClick={() => setActiveTab('tools')} className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] uppercase tracking-widest px-3 py-2 rounded-xl">
+                Open affiliate directory
+              </button>
+            </div>
           </div>
         )}
 
@@ -1676,8 +1747,10 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-black text-white">Recommended AI Tool &amp; Software Directory</h3>
-                  <p className="text-slate-450 text-xs mt-1">Recommended platforms to execute optimized prompt workflows. All links automatically integrate configured referral tags.</p>
+                  <p className="text-slate-450 text-xs mt-1">Recommended platforms to execute optimized prompt workflows. Links include your configured referral tag for affiliate revenue.</p>
                 </div>
+
+                {!isUnlocked && renderSponsorSlot('Tools directory sponsor')}
 
                 <div className="grid grid-cols-1 gap-4">
                   {CURATED_TOOLS.map((tool, idx) => (
@@ -1694,12 +1767,13 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                       </div>
 
                       <a
-                        href={`${tool.link}?ref=${affiliateTag}`}
+                        href={buildAffiliateUrl(tool.link)}
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="sponsored noopener noreferrer"
                         className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl text-center uppercase tracking-wide shrink-0"
                       >
-                        Get Access 竊・                      </a>
+                        Get Access &gt;
+                      </a>
                     </div>
                   ))}
                 </div>
@@ -1776,6 +1850,70 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                 <p>
                   All curated favorites and wizard custom templates are cached solely inside your device's browser Sandbox Local Storage environment.
                 </p>
+              </div>
+            )}
+
+            {activeTab === 'pricing' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-xl font-black text-white">Freemium Monetization</h3>
+                  <p className="text-slate-450 text-xs mt-1">Free users see sponsor placements and affiliate recommendations. Pro users unlock premium formulas and remove sponsor slots.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Free</span>
+                    <div>
+                      <h4 className="text-2xl font-black text-white">$0</h4>
+                      <p className="text-xs text-slate-400 mt-1">Best for trying the niche launch workflow.</p>
+                    </div>
+                    <ul className="space-y-2 text-xs text-slate-300">
+                      <li>✓ Free prompt workflows</li>
+                      <li>✓ Prompt quality lab</li>
+                      <li>✓ Smart variable fill</li>
+                      <li>✓ Affiliate-supported tool directory</li>
+                      <li>• Includes sponsor placements</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-slate-900 border border-amber-400/35 rounded-3xl p-6 space-y-4 shadow-xl shadow-amber-500/5">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">Pro</span>
+                    <div>
+                      <h4 className="text-2xl font-black text-white">${simPremiumPrice}</h4>
+                      <p className="text-xs text-slate-400 mt-1">For builders who want the complete launch kit.</p>
+                    </div>
+                    <ul className="space-y-2 text-xs text-slate-300">
+                      <li>✓ Removes sponsor placements</li>
+                      <li>✓ Unlocks premium formulas</li>
+                      <li>✓ Full launch pack exports</li>
+                      <li>✓ Premium funnel and SEO blueprints</li>
+                      <li>✓ Better for paid client work</li>
+                    </ul>
+                    <a href={gumroadLink} target="_blank" rel="sponsored noopener noreferrer" className="block text-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-widest py-3 rounded-xl">
+                      Upgrade to Pro
+                    </a>
+                  </div>
+
+                  <div className="bg-slate-900 border border-emerald-500/25 rounded-3xl p-6 space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Sponsor</span>
+                    <div>
+                      <h4 className="text-2xl font-black text-white">Ads + affiliates</h4>
+                      <p className="text-xs text-slate-400 mt-1">For monetizing free traffic without blocking value.</p>
+                    </div>
+                    <ul className="space-y-2 text-xs text-slate-300">
+                      <li>✓ Native sponsor banner</li>
+                      <li>✓ Homepage sponsor card</li>
+                      <li>✓ Tools directory affiliate links</li>
+                      <li>✓ Configurable referral tag</li>
+                      <li>✓ Contact route for sponsor requests</li>
+                    </ul>
+                    <button onClick={() => setShowAdminPanel(true)} className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-widest py-3 rounded-xl">
+                      Open creator dashboard
+                    </button>
+                  </div>
+                </div>
+
+                {!isUnlocked && renderSponsorSlot('Pricing page sponsor')}
               </div>
             )}
 
@@ -1987,6 +2125,8 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                 </button>
               </div>
             </div>
+
+            {!isUnlocked && renderSponsorSlot('Customizer sidebar sponsor')}
 
           </div>
 

@@ -11,6 +11,15 @@ A premium-style React app for finding AI micro-niches, generating paid offers, a
 - Local prompt quality lab
 - Prompt launch pack export
 - Favorite and custom prompt storage
+- Freemium pricing page
+- Native sponsor slots
+- Affiliate-tagged AI tools directory
+
+## Monetization Model
+
+- Free users get useful workflows supported by native sponsor placements.
+- Pro users unlock premium formulas and remove sponsor slots.
+- Affiliate revenue can come from the AI tools directory by editing the referral tag in the creator dashboard.
 
 ## Run Locally
 
