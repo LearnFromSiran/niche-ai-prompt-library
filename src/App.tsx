@@ -771,9 +771,9 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
               </div>
               <div>
                 <h1 className="font-extrabold text-base sm:text-xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-                  Niche Prompt Library <span className="text-[9px] font-black tracking-widest text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-md ml-1.5 uppercase">PRO</span>
+                  Niche AI Launch Studio <span className="text-[9px] font-black tracking-widest text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-md ml-1.5 uppercase">PRO</span>
                 </h1>
-                <p className="text-[10px] text-indigo-400 font-bold tracking-widest uppercase hidden sm:block">Advanced Customization Workspace</p>
+                <p className="text-[10px] text-indigo-400 font-bold tracking-widest uppercase hidden sm:block">Micro-niche validation and offer builder</p>
               </div>
             </button>
 
@@ -1067,14 +1067,14 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
             </span>
             
             <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-none">
-              Supercharge Operations with <br />
+              Find a Profitable AI Micro-Niche, <br />
               <span className="bg-gradient-to-r from-emerald-400 via-indigo-400 to-amber-300 bg-clip-text text-transparent">
-                Expert-Level Prompt Engineering
+                Build a Paid Offer in Minutes
               </span>
             </h2>
             
             <p className="max-w-3xl mx-auto text-sm md:text-lg text-slate-400 leading-relaxed font-light">
-              Don't guess outputs. Discover, test, and instantly customize verified templates engineered with strict professional parameters. Export custom playbook bundles, run playbooks, and scale your niche SaaS.
+              Validate a niche idea, generate offer positioning, audit prompt quality, and export a launch-ready playbook before you spend weeks building the wrong AI product.
             </p>
 
             {/* Hero Global Filter */}
@@ -1089,7 +1089,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search 15+ premium templates (e.g. listings, onboarding, marketing)..."
+                  placeholder="Search niche ideas, offers, agents, launch packs..."
                   className="block w-full pl-11 pr-4 py-3 bg-transparent border-0 text-white placeholder-slate-500 focus:ring-0 focus:outline-none text-xs sm:text-sm font-semibold"
                 />
               </div>
@@ -1100,17 +1100,17 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                 }}
                 className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-3 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/20 text-xs tracking-wider uppercase flex items-center justify-center"
               >
-                Find Prompts
+                Find a Niche
               </button>
             </div>
 
             {/* Quick action shortcuts */}
             <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-slate-400 pt-2">
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 3 Specialties</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Niche validation</span>
               <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Paywalled Pro Formulas</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Paid offer builder</span>
               <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Pro MD Playbooks</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Launch pack export</span>
             </div>
 
           </div>
@@ -1201,7 +1201,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
               <div className="space-y-4">
                 <h3 id="browse-templates-header" className="text-lg font-black tracking-tight text-white flex items-center gap-2">
                   <span className="w-1 h-5 rounded-full bg-emerald-500"></span>
-                  Prompt Specialization Collections
+                  Niche Launch Workflows
                 </h3>
                 
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -1230,7 +1230,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
               
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-black tracking-wider uppercase text-slate-400">
-                  {activeTab === 'home' ? 'Trending Prompt Templates' : 
+                  {activeTab === 'home' ? 'Launch-Ready AI Workflows' : 
                    activeTab === 'favorites' ? 'Curated Favorites Portfolio' : 
                    `${activeTab.toUpperCase().replace('-', ' ')} Playbook`}
                 </h3>

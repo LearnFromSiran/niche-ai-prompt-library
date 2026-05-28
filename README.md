@@ -1,10 +1,11 @@
-# Niche AI Prompt Library
+# Niche AI Launch Studio
 
-A premium-style React app for discovering, customizing, auditing, and exporting niche AI prompt workflows.
+A premium-style React app for finding AI micro-niches, generating paid offers, auditing prompt quality, and exporting launch-ready playbooks.
 
 ## Features
 
-- Niche AI prompt collections
+- AI micro-niche validation workflows
+- Paid offer positioning prompts
 - Commercial readiness scoring
 - Smart variable examples
 - Local prompt quality lab
