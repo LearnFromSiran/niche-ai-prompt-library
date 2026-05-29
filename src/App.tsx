@@ -426,12 +426,44 @@ export default function App() {
     const verdict = score >= 82 ? 'Pre-sell now' : score >= 68 ? 'Validate first' : 'Refine niche';
     const risk = score >= 82 ? 'Main risk: execution and distribution consistency.' : score >= 68 ? 'Main risk: weak proof of willingness to pay.' : 'Main risk: buyer, pain, or budget is still too vague.';
     const nextAction = score >= 82 ? 'Send 20 validation messages and ask for 3 paid pilots.' : score >= 68 ? 'Interview 5 buyers before building a full product.' : 'Narrow the buyer and rewrite the pain as a costly repeated workflow.';
+    const weakestDimension = [
+      { label: 'Buyer clarity', value: buyerScore },
+      { label: 'Pain urgency', value: painScore },
+      { label: 'Budget proof', value: budgetScore },
+      { label: 'MVP simplicity', value: deliveryScore },
+      { label: 'Reachability', value: channelScore }
+    ].sort((a, b) => a.value - b.value)[0];
+    const swot = {
+      strengths: [
+        buyerScore >= 8 ? 'Specific buyer group is easy to name and message.' : 'There is at least a starting buyer segment to refine.',
+        deliveryScore >= 8 ? 'MVP can be packaged as a small workflow before building SaaS.' : 'Offer can still begin as a service or template pilot.'
+      ],
+      weaknesses: [
+        `${weakestDimension.label} is the weakest signal right now.`,
+        budgetScore < 8 ? 'Willingness to pay needs stronger proof.' : 'Pricing signal exists, but still needs buyer confirmation.'
+      ],
+      opportunities: [
+        'Sell a done-with-you pilot before investing in full product development.',
+        channelScore >= 8 ? 'Multiple acquisition paths make outreach testing realistic.' : 'A narrow community or partner channel could become the first growth loop.'
+      ],
+      threats: [
+        'Generic AI tools can copy the surface-level feature quickly.',
+        painScore < 8 ? 'If the pain is only annoying, buyers may not pay.' : 'Competitors can win if they show stronger proof or integrations.'
+      ]
+    };
+    const proofToCollect = [
+      '3 buyer quotes describing the workflow cost in their own words',
+      '1 paid pilot or preorder before building advanced features',
+      'Before/after time saved from one real workflow sample'
+    ];
 
     return {
       score,
       verdict,
       risk,
       nextAction,
+      swot,
+      proofToCollect,
       dimensions: [
         { label: 'Buyer clarity', value: buyerScore, note: 'Specific reachable buyer' },
         { label: 'Pain urgency', value: painScore, note: 'Repeated costly workflow' },
@@ -784,8 +816,22 @@ Constraints, Guardrails & Nuance details: ${wizardConstraints.trim()}`;
     const budget = launchBudget.trim() || 'a clear monthly budget';
     const delivery = launchDelivery.trim() || 'a simple AI workflow';
     const channel = launchChannel.trim() || 'direct outreach and niche communities';
-    const { score, verdict, risk, nextAction, dimensions } = launchScorecard;
+    const { score, verdict, risk, nextAction, dimensions, swot, proofToCollect } = launchScorecard;
     const scoreRows = dimensions.map(item => `- ${item.label}: ${item.value}/10 - ${item.note}`).join('\n');
+    const swotRows = [
+      'Strengths:',
+      ...swot.strengths.map(item => `- ${item}`),
+      '',
+      'Weaknesses:',
+      ...swot.weaknesses.map(item => `- ${item}`),
+      '',
+      'Opportunities:',
+      ...swot.opportunities.map(item => `- ${item}`),
+      '',
+      'Threats:',
+      ...swot.threats.map(item => `- ${item}`)
+    ].join('\n');
+    const proofRows = proofToCollect.map(item => `- ${item}`).join('\n');
     const guarantee = score >= 82
       ? 'First workflow delivered in 48 hours or the pilot is free.'
       : 'Pay only after the first workflow saves measurable time.';
@@ -814,6 +860,12 @@ ${scoreRows}
 
 Risk: ${risk}
 Next move: ${nextAction}
+
+## SWOT Diagnosis
+${swotRows}
+
+## Proof To Collect Before Scaling
+${proofRows}
 
 ## Paid Offer
 We help ${buyer} solve "${pain}" using ${delivery}, so they can save time, respond faster, and reduce operational drag without hiring extra staff.
@@ -1480,6 +1532,38 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                       ))}
                     </div>
                     <p className="text-xs text-slate-400 mt-3 leading-relaxed">{launchScorecard.risk}</p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">SWOT Snapshot</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300">{launchScorecard.nextAction}</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { title: 'Strengths', items: launchScorecard.swot.strengths, color: 'text-emerald-300' },
+                      { title: 'Weaknesses', items: launchScorecard.swot.weaknesses, color: 'text-amber-300' },
+                      { title: 'Opportunities', items: launchScorecard.swot.opportunities, color: 'text-indigo-300' },
+                      { title: 'Threats', items: launchScorecard.swot.threats, color: 'text-rose-300' }
+                    ].map(section => (
+                      <div key={section.title} className="border border-slate-800 rounded-xl p-3">
+                        <h4 className={`text-[10px] font-black uppercase tracking-widest ${section.color}`}>{section.title}</h4>
+                        <ul className="mt-2 space-y-1">
+                          {section.items.map(item => (
+                            <li key={item} className="text-xs text-slate-400 leading-relaxed">{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-slate-800">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Proof needed</span>
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {launchScorecard.proofToCollect.map(item => (
+                        <div key={item} className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 leading-relaxed">{item}</div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
