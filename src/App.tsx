@@ -353,6 +353,45 @@ const VALIDATION_STATUSES = [
   { id: 'no', label: 'No' }
 ];
 
+const PILOT_PACKAGES = [
+  {
+    title: 'Review Reply Pilot',
+    niche: 'small dental clinics with 1-5 locations',
+    pain: 'Google review replies are delayed, inconsistent, or ignored',
+    offer: 'AI review reply workflow + escalation rules + clinic tone guide',
+    price: '$299 setup or $99/month after pilot',
+    proof: '10 real reviews rewritten, approval checklist, and before/after response time',
+    channel: 'cold email to clinic managers, local SEO agencies, and dental practice groups'
+  },
+  {
+    title: 'Listing Launch Pilot',
+    niche: 'solo real estate agents with 3-10 active listings per month',
+    pain: 'listing copy, captions, and open-house follow-ups take too long',
+    offer: 'AI listing copy kit + social captions + follow-up email workflow',
+    price: '$199 setup or $79/month after pilot',
+    proof: 'one listing package produced in under 30 minutes with agent approval',
+    channel: 'local realtor groups, Instagram DMs, and brokerage newsletters'
+  },
+  {
+    title: 'SOP Builder Pilot',
+    niche: 'residential cleaning companies with 5-30 cleaners',
+    pain: 'owners train staff verbally and jobs are completed inconsistently',
+    offer: 'AI SOP generator + room-by-room checklists + trainer handoff pack',
+    price: '$399 setup or $149/month after pilot',
+    proof: 'one recurring job converted into a staff-ready checklist system',
+    channel: 'cleaning business groups, local owner communities, and YouTube comments'
+  },
+  {
+    title: 'Client Recap Pilot',
+    niche: 'online fitness coaches managing 20-100 clients',
+    pain: 'weekly client check-in recaps and accountability messages eat evenings',
+    offer: 'AI check-in recap workflow + tone presets + risk flag checklist',
+    price: '$249 setup or $99/month after pilot',
+    proof: 'five client updates drafted from real check-in notes with coach edits',
+    channel: 'fitness coach communities, Instagram, and coaching software groups'
+  }
+];
+
 // ============================================================================
 // UTILITY HELPERS
 // ============================================================================
@@ -1116,6 +1155,18 @@ Day 7: Publish the offer page and send 20 follow-ups.
     loadMicroNiche(userFitPlan.recommended);
   };
 
+  const loadPilotPackage = (pilot) => {
+    setLaunchBuyer(pilot.niche);
+    setLaunchPain(pilot.pain);
+    setLaunchBudget(pilot.price);
+    setLaunchDelivery(pilot.offer);
+    setLaunchChannel(pilot.channel);
+    setLaunchBrief('');
+    setValidationName('');
+    setValidationNotes(pilot.proof);
+    showToast(`Loaded ${pilot.title}. Track buyers or generate the pilot plan.`);
+  };
+
   const addValidationRow = () => {
     const name = validationName.trim();
     if (!name) {
@@ -1478,16 +1529,16 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
               </div>
               <div>
                 <h1 className="font-extrabold text-base sm:text-xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-                  Niche AI Launch Studio <span className="text-[9px] font-black tracking-widest text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-md ml-1.5 uppercase">PRO</span>
+                  AI Workflow Pilot Studio <span className="text-[9px] font-black tracking-widest text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-md ml-1.5 uppercase">BETA</span>
                 </h1>
-                <p className="text-[10px] text-indigo-400 font-bold tracking-widest uppercase hidden sm:block">Micro-niche validation and offer builder</p>
+                <p className="text-[10px] text-indigo-400 font-bold tracking-widest uppercase hidden sm:block">Sell small business AI pilots before building SaaS</p>
               </div>
             </button>
 
             {/* Desktop Navigation Link Tabs */}
             <nav className="hidden lg:flex items-center space-x-1">
               {[
-                { id: 'home', label: 'All Presets' },
+                { id: 'home', label: 'Pilot Builder' },
                 { id: 'real-estate', label: 'Real Estate Agents' },
                 { id: 'hr', label: 'HR Professionals' },
                 { id: 'marketing', label: 'Marketers' },
@@ -1770,15 +1821,27 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-6 items-start">
             <div className="space-y-5">
               <span className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-400/10 text-emerald-300 border border-emerald-400/20">
-                AI micro-business finder
+                48-hour AI workflow pilot
               </span>
               <div>
                 <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
-                  Decide what AI service to sell, who to sell it to, and how to test it.
+                  Sell one useful AI workflow to a real small business before building an app.
                 </h2>
                 <p className="mt-4 text-sm text-slate-400 leading-relaxed max-w-xl">
-                  Use this when you want a practical AI micro-business idea, not another prompt list. It recommends a niche from your skill and reach, then gives you the offer, price, outreach script, proof needed, and kill criteria.
+                  Pick a narrow business workflow, contact 30 buyers, book demos, and sell a paid pilot. The studio gives you the offer, pricing, outreach messages, proof checklist, and buyer tracker.
                 </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { title: 'Offer', body: 'One repeated admin workflow with clear time savings.' },
+                  { title: 'Proof', body: '30 contacts, 3 demos, 1 paid pilot before more building.' },
+                  { title: 'Revenue', body: '$199-$399 setup, then optional monthly support.' }
+                ].map(item => (
+                  <div key={item.title} className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                    <h3 className="text-sm font-black text-white">{item.title}</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed mt-2">{item.body}</p>
+                  </div>
+                ))}
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
                 <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300 mb-3">How this helps valuable users</div>
@@ -1869,14 +1932,17 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <button onClick={loadRecommendedPlan} className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
-                    Load This Plan
+                <button onClick={loadRecommendedPlan} className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                  Load This Plan
+                </button>
+                  <button onClick={() => setActiveTab('tracker')} className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Open Tracker
                   </button>
                   <button onClick={() => {
                     const target = document.getElementById('browse-templates-header');
                     if (target) target.scrollIntoView({ behavior: 'smooth' });
                   }} className="bg-slate-800 hover:bg-slate-700 text-white font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
-                    Browse Prompts
+                    Browse Tools
                   </button>
                 </div>
               </div>
@@ -1899,6 +1965,34 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
           MAIN PAGE BODY
           ============================================================================ */}
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+
+        {activeTab === 'home' && (
+          <div className="mb-12 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Start here</span>
+                <h3 className="text-2xl font-black text-white mt-1">Pick one 48-hour pilot to sell this week.</h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-2xl">These are service offers, not app ideas. Load one, import buyers, copy outreach, and try to sell a paid pilot before building anything larger.</p>
+              </div>
+              <button onClick={() => setActiveTab('tracker')} className="text-[10px] font-black uppercase tracking-widest text-emerald-300 underline">
+                Open validation tracker
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+              {PILOT_PACKAGES.map(pilot => (
+                <button key={pilot.title} onClick={() => loadPilotPackage(pilot)} className="bg-slate-900 border border-slate-800 hover:border-emerald-500/35 rounded-2xl p-5 text-left transition-all hover:scale-[1.01]">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">{pilot.price}</div>
+                  <h4 className="font-black text-white text-base mt-2">{pilot.title}</h4>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">{pilot.niche}</p>
+                  <p className="text-xs text-slate-500 mt-3 leading-relaxed">{pilot.pain}</p>
+                  <div className="mt-4 pt-3 border-t border-slate-800">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300">Load pilot offer</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* GUIDED AI NICHE LAUNCH WIZARD */}
         {activeTab === 'home' && (
@@ -1907,11 +2001,11 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
               <div className="space-y-5">
                 <div>
                   <span className="bg-emerald-400/10 text-emerald-300 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-400/20">
-                    Guided launch wizard
+                    Pilot offer builder
                   </span>
-                  <h3 className="text-2xl md:text-3xl font-black mt-3 mb-2">Turn the recommendation into a sell-or-kill validation plan.</h3>
+                  <h3 className="text-2xl md:text-3xl font-black mt-3 mb-2">Turn the pilot into an outreach-ready offer.</h3>
                   <p className="text-slate-400 text-xs md:text-sm max-w-xl leading-relaxed">
-                    Load a recommendation or enter your own buyer. The studio tells you if the idea is worth testing, what proof to collect, what to sell first, and when to stop.
+                    Load a pilot package or enter your own buyer. The studio tells you the demand risk, what proof to collect, what to sell first, and when to stop.
                   </p>
                 </div>
 
@@ -2031,27 +2125,31 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
             {[
               {
-                title: '1. Validate the niche',
-                body: 'Open the Niche AI validator, smart-fill examples, then replace them with a real buyer workflow.',
-                action: 'Open Validator',
+                title: '1. Pick a paid pilot',
+                body: 'Choose one buyer, one painful workflow, one clear price, and one proof target.',
+                action: 'Pick Pilot',
                 promptId: 'niche-ai-validator'
               },
               {
-                title: '2. Shape the paid offer',
-                body: 'Turn the workflow into a promise, tiers, objection handling, and landing-page copy.',
-                action: 'Build Offer',
+                title: '2. Contact 30 buyers',
+                body: 'Import prospects, copy status-based messages, and track replies in the validation tracker.',
+                action: 'Open Tracker',
                 promptId: 'niche-ai-offer'
               },
               {
-                title: '3. Export the launch pack',
-                body: 'Use the readiness score, quality lab, and launch pack export before publishing or selling.',
-                action: 'Show Lab',
+                title: '3. Sell or kill',
+                body: 'Continue only after a paid pilot, 3 demos, or strong buyer pain quotes.',
+                action: 'Export Proof',
                 promptId: 'niche-ai-agent-spec'
               }
             ].map(item => (
               <button
                 key={item.title}
                 onClick={() => {
+                  if (item.action !== 'Pick Pilot') {
+                    setActiveTab('tracker');
+                    return;
+                  }
                   const prompt = PRESET_PROMPTS.find(p => p.id === item.promptId);
                   if (prompt) selectAndFocusPrompt(prompt);
                 }}
@@ -2906,60 +3004,60 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
             {activeTab === 'pricing' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-black text-white">Freemium Monetization</h3>
-                  <p className="text-slate-450 text-xs mt-1">Free users see sponsor placements and affiliate recommendations. Pro users unlock premium formulas and remove sponsor slots.</p>
+                  <h3 className="text-xl font-black text-white">Pilot Service Pricing</h3>
+                  <p className="text-slate-450 text-xs mt-1">Use the app to validate demand, then sell setup pilots and monthly workflow support. This is the pivot away from a generic prompt library.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Free</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Validate</span>
                     <div>
                       <h4 className="text-2xl font-black text-white">$0</h4>
-                      <p className="text-xs text-slate-400 mt-1">Best for trying the niche launch workflow.</p>
+                      <p className="text-xs text-slate-400 mt-1">Use this before spending time building.</p>
                     </div>
                     <ul className="space-y-2 text-xs text-slate-300">
-                      <li>✓ Free prompt workflows</li>
-                      <li>✓ Prompt quality lab</li>
-                      <li>✓ Smart variable fill</li>
-                      <li>✓ Affiliate-supported tool directory</li>
-                      <li>• Includes sponsor placements</li>
+                      <li>✓ Pick one workflow pilot</li>
+                      <li>✓ Import 30 buyer targets</li>
+                      <li>✓ Copy outreach and follow-up messages</li>
+                      <li>✓ Track replies, demos, and paid pilots</li>
+                      <li>✓ Export validation proof</li>
                     </ul>
                   </div>
 
                   <div className="bg-slate-900 border border-amber-400/35 rounded-3xl p-6 space-y-4 shadow-xl shadow-amber-500/5">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">Pro</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">Paid pilot</span>
                     <div>
-                      <h4 className="text-2xl font-black text-white">${simPremiumPrice}</h4>
-                      <p className="text-xs text-slate-400 mt-1">For builders who want the complete launch kit.</p>
+                      <h4 className="text-2xl font-black text-white">$199-$399</h4>
+                      <p className="text-xs text-slate-400 mt-1">The first thing to sell to a real business.</p>
                     </div>
                     <ul className="space-y-2 text-xs text-slate-300">
-                      <li>✓ Removes sponsor placements</li>
-                      <li>✓ Unlocks premium formulas</li>
-                      <li>✓ Unlocks premium validated micro-niche kits</li>
-                      <li>✓ Full launch pack exports</li>
-                      <li>✓ Premium funnel, SEO, HR, and agency blueprints</li>
-                      <li>✓ Better for selling client-ready AI workflow kits</li>
+                      <li>✓ One repeated workflow mapped</li>
+                      <li>✓ Prompt/system setup</li>
+                      <li>✓ Approval checklist</li>
+                      <li>✓ Before/after proof sample</li>
+                      <li>✓ 48-hour delivery promise</li>
+                      <li>✓ Refund if no useful workflow is delivered</li>
                     </ul>
                     <a href={gumroadLink} target="_blank" rel="sponsored noopener noreferrer" className="block text-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-widest py-3 rounded-xl">
-                      Upgrade to Pro
+                      Sell this pilot
                     </a>
                   </div>
 
                   <div className="bg-slate-900 border border-emerald-500/25 rounded-3xl p-6 space-y-4">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Sponsor</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Monthly support</span>
                     <div>
-                      <h4 className="text-2xl font-black text-white">Ads + affiliates</h4>
-                      <p className="text-xs text-slate-400 mt-1">For monetizing free traffic without blocking value.</p>
+                      <h4 className="text-2xl font-black text-white">$79-$149/mo</h4>
+                      <p className="text-xs text-slate-400 mt-1">Only offer this after the pilot works.</p>
                     </div>
                     <ul className="space-y-2 text-xs text-slate-300">
-                      <li>✓ Native sponsor banner</li>
-                      <li>✓ Homepage sponsor card</li>
-                      <li>✓ Tools directory affiliate links</li>
-                      <li>✓ Configurable referral tag</li>
-                      <li>✓ Contact route for sponsor requests</li>
+                      <li>✓ Update workflow prompts</li>
+                      <li>✓ Add new examples</li>
+                      <li>✓ Monthly performance review</li>
+                      <li>✓ Staff usage notes</li>
+                      <li>✓ Lightweight automation guidance</li>
                     </ul>
-                    <button onClick={() => setShowAdminPanel(true)} className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-widest py-3 rounded-xl">
-                      Open creator dashboard
+                    <button onClick={() => setActiveTab('tracker')} className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-widest py-3 rounded-xl">
+                      Validate first
                     </button>
                   </div>
                 </div>

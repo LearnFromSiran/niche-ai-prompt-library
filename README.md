@@ -1,31 +1,26 @@
-# Niche AI Launch Studio
+# AI Workflow Pilot Studio
 
-A premium-style React app for finding AI micro-niches, generating paid offers, auditing prompt quality, and exporting launch-ready playbooks.
+A React app for validating and selling small-business AI workflow pilots before building a SaaS or prompt product.
 
-## Features
+## Core Offer
 
-- AI micro-niche validation workflows
-- Guided AI niche launch wizard
-- 10 prebuilt AI micro-niche examples
-- Paid offer positioning prompts
-- Commercial readiness scoring
-- Smart variable examples
-- Local prompt quality lab
-- Prompt launch pack export
-- Favorite and custom prompt storage
-- Freemium pricing page
-- Native sponsor slots
-- Affiliate-tagged AI tools directory
+Sell one narrow AI workflow pilot:
 
-## Monetization Model
+- Pick a small-business niche
+- Load a 48-hour pilot package
+- Generate the offer, proof checklist, and outreach script
+- Import buyer targets
+- Track contacts, replies, demos, and paid pilots
+- Export validation proof
 
-- Free users get useful workflows supported by native sponsor placements.
-- Pro users unlock premium formulas and remove sponsor slots.
-- Affiliate revenue can come from the AI tools directory by editing the referral tag in the creator dashboard.
+## Best Use
 
-## Run Locally
+Use this as an internal sales and validation tool for AI workflow services. The public prompt library idea has been de-emphasized; the stronger business model is selling setup pilots first, then monthly workflow support after proof.
+
+## Commands
 
 ```bash
 npm install
 npm run dev
+npm run build
 ```
