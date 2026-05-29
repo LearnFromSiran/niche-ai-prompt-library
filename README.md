@@ -1,21 +1,23 @@
-# AI Workflow Pilot Studio
+# CyberCover Prep
 
-A React app for validating and selling small-business AI workflow pilots before building a SaaS or prompt product.
+A focused web app for small-business cyber insurance readiness.
 
-## Core Offer
+## Niche
 
-Sell one narrow AI workflow pilot:
+Small businesses preparing for cyber insurance quotes, renewals, client contract requirements, or basic ransomware/data-breach readiness.
 
-- Pick a small-business niche
-- Load a 48-hour pilot package
-- Generate the offer, proof checklist, and outreach script
-- Import buyer targets
-- Track contacts, replies, demos, and paid pilots
-- Export validation proof
+This niche was chosen because cyber insurance, business insurance, backup software, password managers, and security awareness tools have strong advertiser and affiliate intent.
 
-## Best Use
+## Core Features
 
-Use this as an internal sales and validation tool for AI workflow services. The public prompt library idea has been de-emphasized; the stronger business model is selling setup pilots first, then monthly workflow support after proof.
+- Cyber insurance readiness score
+- Business exposure profile
+- Security control checklist
+- Suggested coverage limit range
+- Monthly retention task list
+- Broker email generator
+- Markdown readiness report export
+- High-intent quote/security tool placements
 
 ## Commands
 
