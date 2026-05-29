@@ -326,6 +326,24 @@ const USER_NEED_PATHS = [
   }
 ];
 
+const USER_VALUE_MAP = [
+  {
+    user: 'Beginner trying to earn with AI',
+    problem: 'Does not know which AI idea is realistic to sell.',
+    result: 'Gets one narrow offer, price range, outreach script, and a 7-day validation plan.'
+  },
+  {
+    user: 'Freelancer or consultant',
+    problem: 'Has skills but needs a productized AI service clients can understand.',
+    result: 'Turns a skill into a paid pilot with buyer pain, proof needed, and next action.'
+  },
+  {
+    user: 'Content or affiliate builder',
+    problem: 'Needs useful free tools that attract search/social traffic before monetizing.',
+    result: 'Creates niche reports and launch briefs that can lead to email capture, affiliates, and sponsors.'
+  }
+];
+
 // ============================================================================
 // UTILITY HELPERS
 // ============================================================================
@@ -1516,11 +1534,23 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
               </span>
               <div>
                 <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
-                  Find an AI offer that fits your skill, audience, and time.
+                  Decide what AI service to sell, who to sell it to, and how to test it.
                 </h2>
                 <p className="mt-4 text-sm text-slate-400 leading-relaxed max-w-xl">
-                  Most prompt sites give templates. This helps a beginner or solo builder choose a narrow paid workflow, test demand, and export a practical launch plan before wasting weeks.
+                  Use this when you want a practical AI micro-business idea, not another prompt list. It recommends a niche from your skill and reach, then gives you the offer, price, outreach script, proof needed, and kill criteria.
                 </p>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300 mb-3">How this helps valuable users</div>
+                <div className="space-y-3">
+                  {USER_VALUE_MAP.map(item => (
+                    <div key={item.user} className="border-t border-slate-800 pt-3 first:border-t-0 first:pt-0">
+                      <h3 className="text-sm font-black text-white">{item.user}</h3>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.problem}</p>
+                      <p className="text-xs text-slate-300 mt-1 leading-relaxed">{item.result}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -1610,6 +1640,16 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                   </button>
                 </div>
               </div>
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Use this if</div>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">You want to choose one small AI offer, contact real buyers, and test payment before building.</p>
+                </div>
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-rose-300">Not useful if</div>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">You only want random prompts, passive income without traffic, or a finished SaaS built automatically.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1629,9 +1669,9 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                   <span className="bg-emerald-400/10 text-emerald-300 font-extrabold text-[10px] uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-400/20">
                     Guided launch wizard
                   </span>
-                  <h3 className="text-2xl md:text-3xl font-black mt-3 mb-2">Build one sellable AI niche offer before you code anything.</h3>
+                  <h3 className="text-2xl md:text-3xl font-black mt-3 mb-2">Turn the recommendation into a sell-or-kill validation plan.</h3>
                   <p className="text-slate-400 text-xs md:text-sm max-w-xl leading-relaxed">
-                    Enter a buyer, painful workflow, budget signal, and delivery model. The studio generates a launch brief with scoring, pricing, landing copy, outreach, validation plan, and tool stack.
+                    Load a recommendation or enter your own buyer. The studio tells you if the idea is worth testing, what proof to collect, what to sell first, and when to stop.
                   </p>
                 </div>
 
@@ -1737,7 +1777,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                   <span className="text-[10px] font-black text-emerald-400">{launchBrief ? 'Generated' : 'Ready'}</span>
                 </div>
                 <pre className="whitespace-pre-wrap text-xs leading-relaxed text-slate-300 font-mono">
-                  {launchBrief || 'Fill the fields and click "Generate Launch Brief" to produce a concrete niche score, offer, landing page hook, outreach message, 7-day validation plan, and recommended stack.'}
+                  {launchBrief || 'Click "Load This Plan" above or edit the fields, then generate a sell-or-kill plan with demand score, SWOT, proof needed, paid offer, outreach message, buyer questions, and 7-day validation steps.'}
                 </pre>
               </div>
             </div>
