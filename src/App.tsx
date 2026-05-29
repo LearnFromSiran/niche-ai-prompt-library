@@ -296,6 +296,36 @@ const VALIDATED_MICRO_NICHES = [
   }
 ];
 
+const USER_NEED_PATHS = [
+  {
+    id: 'beginner',
+    label: 'Beginner creator',
+    promise: 'Start with a simple prompt/template product and validate before building software.',
+    bestFor: 'low budget, no audience, 5-10 hours/week',
+    defaultSkill: 'writing, research, admin work, or customer support',
+    defaultAudience: 'small business owners I can reach by email or social media',
+    defaultGoal: 'make the first $100-$500 from a narrow AI workflow'
+  },
+  {
+    id: 'freelancer',
+    label: 'Freelancer',
+    promise: 'Turn your current service skill into a paid AI workflow clients understand.',
+    bestFor: 'designers, marketers, consultants, virtual assistants',
+    defaultSkill: 'copywriting, web design, marketing, operations, or consulting',
+    defaultAudience: 'freelancers, agencies, coaches, or local service businesses',
+    defaultGoal: 'sell a $49-$299 pilot before building a full product'
+  },
+  {
+    id: 'local',
+    label: 'Local business helper',
+    promise: 'Sell practical AI systems to businesses with repeated admin pain.',
+    bestFor: 'local outreach, niche directories, warm referrals',
+    defaultSkill: 'automation setup, writing, spreadsheets, SOPs, or client communication',
+    defaultAudience: 'clinics, realtors, cleaning companies, restaurants, tutors, or law offices',
+    defaultGoal: 'find one business workflow worth paying for monthly'
+  }
+];
+
 // ============================================================================
 // UTILITY HELPERS
 // ============================================================================
@@ -408,6 +438,42 @@ export default function App() {
   const [launchDelivery, setLaunchDelivery] = useState('AI intake assistant + prompt workflow + approval checklist');
   const [launchChannel, setLaunchChannel] = useState('LinkedIn, local business groups, cold email, and partner webinars');
   const [launchBrief, setLaunchBrief] = useState('');
+  const [userPath, setUserPath] = useState('beginner');
+  const [userSkill, setUserSkill] = useState('writing, research, admin work, or customer support');
+  const [userAudience, setUserAudience] = useState('small business owners I can reach by email or social media');
+  const [userGoal, setUserGoal] = useState('make the first $100-$500 from a narrow AI workflow');
+  const [weeklyHours, setWeeklyHours] = useState(6);
+
+  const userFitPlan = useMemo(() => {
+    const skill = userSkill.toLowerCase();
+    const audience = userAudience.toLowerCase();
+    const goal = userGoal.toLowerCase();
+    const allText = `${skill} ${audience} ${goal}`;
+    const scored = VALIDATED_MICRO_NICHES.map(niche => {
+      const nicheText = `${niche.title} ${niche.buyer} ${niche.pain} ${niche.delivery} ${niche.channel}`.toLowerCase();
+      let fit = niche.score;
+      if (/writing|copy|content|marketing|social|email|research/.test(allText) && /copy|proposal|listing|grant|email|description|writer|reply/.test(nicheText)) fit += 12;
+      if (/admin|operations|sop|process|support|assistant|automation/.test(allText) && /sop|intake|recap|follow-up|checklist|workflow|admin/.test(nicheText)) fit += 12;
+      if (/local|clinic|restaurant|dental|realtor|cleaning|tutor|law|fitness/.test(allText) && /clinic|restaurant|realtor|cleaning|tutoring|lawyer|fitness|local/.test(nicheText)) fit += 12;
+      if (/freelance|agency|designer|consultant|coach/.test(allText) && /freelance|agency|consultant|coach|proposal|client/.test(nicheText)) fit += 10;
+      if (weeklyHours <= 6 && /template|prompt|checklist|copy|reply|description/.test(nicheText)) fit += 8;
+      if (weeklyHours >= 10 && /system|assistant|automation|sop|grant/.test(nicheText)) fit += 6;
+      if (!niche.free && !isUnlocked) fit -= 8;
+      return { ...niche, fit: Math.min(100, fit) };
+    }).sort((a, b) => b.fit - a.fit);
+    const recommended = scored[0];
+    const route = weeklyHours <= 5 ? 'Sell a template pack first.' : weeklyHours <= 10 ? 'Sell a guided setup pilot.' : 'Build a repeatable workflow service.';
+    const monetization = /affiliate|ads|content|audience/.test(goal)
+      ? 'Use free niche reports for traffic, then monetize with affiliate tools and sponsor slots.'
+      : 'Use direct outreach first; ads and affiliates become secondary revenue after traffic exists.';
+
+    return {
+      recommended,
+      alternatives: scored.slice(1, 4),
+      route,
+      monetization
+    };
+  }, [userSkill, userAudience, userGoal, weeklyHours, isUnlocked]);
 
   const launchScorecard = useMemo(() => {
     const buyer = launchBuyer.trim();
@@ -832,6 +898,7 @@ Constraints, Guardrails & Nuance details: ${wizardConstraints.trim()}`;
       ...swot.threats.map(item => `- ${item}`)
     ].join('\n');
     const proofRows = proofToCollect.map(item => `- ${item}`).join('\n');
+    const alternativesRows = userFitPlan.alternatives.map(item => `- ${item.title}: ${item.fit}/100 fit`).join('\n');
     const guarantee = score >= 82
       ? 'First workflow delivered in 48 hours or the pilot is free.'
       : 'Pay only after the first workflow saves measurable time.';
@@ -843,6 +910,14 @@ Constraints, Guardrails & Nuance details: ${wizardConstraints.trim()}`;
 
 ## Niche
 ${buyer}
+
+## Builder Fit
+- Skill: ${userSkill}
+- Reachable audience: ${userAudience}
+- Money goal: ${userGoal}
+- Time available: ${weeklyHours} hours/week
+- Recommended route: ${userFitPlan.route}
+- Monetization note: ${userFitPlan.monetization}
 
 ## Pain Worth Solving
 ${pain}
@@ -866,6 +941,9 @@ ${swotRows}
 
 ## Proof To Collect Before Scaling
 ${proofRows}
+
+## Alternative Niches To Compare
+${alternativesRows || '- No alternative niche matched yet.'}
 
 ## Paid Offer
 We help ${buyer} solve "${pain}" using ${delivery}, so they can save time, respond faster, and reduce operational drag without hiring extra staff.
@@ -949,6 +1027,20 @@ Day 7: Publish the offer page and send 20 follow-ups.
     setLaunchChannel(niche.channel);
     setLaunchBrief('');
     showToast(`Loaded ${niche.title}. Generate the launch brief next.`);
+  };
+
+  const applyUserPath = (path) => {
+    setUserPath(path.id);
+    setUserSkill(path.defaultSkill);
+    setUserAudience(path.defaultAudience);
+    setUserGoal(path.defaultGoal);
+    setLaunchBrief('');
+    showToast(`Switched to ${path.label}. Review the recommended niche.`);
+  };
+
+  const loadRecommendedPlan = () => {
+    if (!userFitPlan.recommended) return;
+    loadMicroNiche(userFitPlan.recommended);
   };
 
   // ==========================================
@@ -1413,76 +1505,112 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
       )}
 
       {/* ============================================================================
-          GLOBAL HERO SECTION
+          USER-NEED HERO SECTION
           ============================================================================ */}
       {activeTab === 'home' && (
-        <section className="relative overflow-hidden bg-slate-950 text-white py-14 md:py-20 border-b border-slate-800">
-          <div className="absolute inset-0 opacity-15 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:3.5rem_3.5rem]"></div>
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
-
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-            <span className="inline-flex items-center gap-1.5 py-1 px-3.5 rounded-full text-xs font-semibold bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 animate-bounce">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              Newly Upgraded May 2026 Workflows
-            </span>
-            
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-none">
-              Find a Profitable AI Micro-Niche, <br />
-              <span className="bg-gradient-to-r from-emerald-400 via-indigo-400 to-amber-300 bg-clip-text text-transparent">
-                Build a Paid Offer in Minutes
+        <section className="bg-slate-950 text-white py-10 md:py-14 border-b border-slate-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-6 items-start">
+            <div className="space-y-5">
+              <span className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-400/10 text-emerald-300 border border-emerald-400/20">
+                AI micro-business finder
               </span>
-            </h2>
-            
-            <p className="max-w-3xl mx-auto text-sm md:text-lg text-slate-400 leading-relaxed font-light">
-              Validate a niche idea, generate offer positioning, audit prompt quality, and export a launch-ready playbook before you spend weeks building the wrong AI product.
-            </p>
+              <div>
+                <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+                  Find an AI offer that fits your skill, audience, and time.
+                </h2>
+                <p className="mt-4 text-sm text-slate-400 leading-relaxed max-w-xl">
+                  Most prompt sites give templates. This helps a beginner or solo builder choose a narrow paid workflow, test demand, and export a practical launch plan before wasting weeks.
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { value: userFitPlan.recommended?.fit || 0, label: 'Fit score' },
+                  { value: weeklyHours, label: 'hrs/week' },
+                  { value: userFitPlan.alternatives.length + 1, label: 'matched ideas' }
+                ].map(metric => (
+                  <div key={metric.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                    <div className="text-2xl font-black text-white">{metric.value}</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-1">{metric.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-            {/* Hero Global Filter */}
-            <div className="max-w-xl mx-auto bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 shadow-2xl backdrop-blur-md flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-grow">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 md:p-6 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <div>
+                  <h3 className="font-black text-white">Start with your real situation</h3>
+                  <p className="text-xs text-slate-400 mt-1">The recommendation changes as you edit the fields.</p>
                 </div>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search niche ideas, offers, agents, launch packs..."
-                  className="block w-full pl-11 pr-4 py-3 bg-transparent border-0 text-white placeholder-slate-500 focus:ring-0 focus:outline-none text-xs sm:text-sm font-semibold"
-                />
+                {!isUnlocked && (
+                  <button onClick={() => setActiveTab('pricing')} className="text-[10px] font-black uppercase tracking-widest text-amber-300 underline">
+                    Pro removes ads
+                  </button>
+                )}
               </div>
-              <button 
-                onClick={() => {
-                  const target = document.getElementById('browse-templates-header');
-                  if (target) target.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-3 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/20 text-xs tracking-wider uppercase flex items-center justify-center"
-              >
-                Find a Niche
-              </button>
-            </div>
 
-            {/* Quick action shortcuts */}
-            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-slate-400 pt-2">
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Niche validation</span>
-              <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Paid offer builder</span>
-              <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> Launch pack export</span>
-            </div>
-
-            {!isUnlocked && (
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-800 px-2.5 py-1 rounded-full">Free plan: sponsor supported</span>
-                <button onClick={() => setActiveTab('pricing')} className="text-[10px] font-black uppercase tracking-widest text-amber-300 underline">
-                  Remove ads with Pro
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
+                {USER_NEED_PATHS.map(path => (
+                  <button
+                    key={path.id}
+                    onClick={() => applyUserPath(path)}
+                    className={`border rounded-2xl p-3 text-left transition-all ${userPath === path.id ? 'bg-emerald-500/10 border-emerald-400/40' : 'bg-slate-950 border-slate-800 hover:border-slate-700'}`}
+                  >
+                    <div className="text-xs font-black text-white">{path.label}</div>
+                    <div className="text-[10px] text-slate-500 leading-relaxed mt-1">{path.bestFor}</div>
+                  </button>
+                ))}
               </div>
-            )}
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Your skill</label>
+                  <input value={userSkill} onChange={(e) => setUserSkill(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Who you can reach</label>
+                  <input value={userAudience} onChange={(e) => setUserAudience(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Money goal</label>
+                  <input value={userGoal} onChange={(e) => setUserGoal(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Time per week: {weeklyHours}h</label>
+                  <input type="range" min="2" max="20" value={weeklyHours} onChange={(e) => setWeeklyHours(Number(e.target.value))} className="w-full accent-emerald-400" />
+                </div>
+                <div className="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Recommended route</div>
+                  <div className="text-xs text-slate-300 mt-1 leading-relaxed">{userFitPlan.route}</div>
+                </div>
+              </div>
+
+              <div className="mt-4 bg-slate-950 border border-emerald-500/20 rounded-2xl p-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Best fit</div>
+                    <h4 className="text-lg font-black text-white mt-1">{userFitPlan.recommended?.title}</h4>
+                    <p className="text-xs text-slate-400 mt-2 leading-relaxed">{userFitPlan.recommended?.buyer}</p>
+                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">{userFitPlan.monetization}</p>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <div className="text-3xl font-black text-emerald-300">{userFitPlan.recommended?.fit}</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">fit score</div>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button onClick={loadRecommendedPlan} className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Load This Plan
+                  </button>
+                  <button onClick={() => {
+                    const target = document.getElementById('browse-templates-header');
+                    if (target) target.scrollIntoView({ behavior: 'smooth' });
+                  }} className="bg-slate-800 hover:bg-slate-700 text-white font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Browse Prompts
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       )}
