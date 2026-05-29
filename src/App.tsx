@@ -484,6 +484,8 @@ export default function App() {
   const [validationChannel, setValidationChannel] = useState('LinkedIn');
   const [validationStatus, setValidationStatus] = useState('target');
   const [validationNotes, setValidationNotes] = useState('');
+  const [bulkTargets, setBulkTargets] = useState('');
+  const [outreachTone, setOutreachTone] = useState('direct');
 
   const userFitPlan = useMemo(() => {
     const skill = userSkill.toLowerCase();
@@ -592,6 +594,9 @@ export default function App() {
     const replyRate = contacted ? Math.round((replied / contacted) * 100) : 0;
     const demoRate = contacted ? Math.round((demos / contacted) * 100) : 0;
     const pilotRate = contacted ? Math.round((pilots / contacted) * 100) : 0;
+    const proofScore = Math.min(100, Math.round((contacted * 1.5) + (replied * 8) + (demos * 14) + (pilots * 30)));
+    const estimatedPilotRevenue = pilots * 299;
+    const breakEvenContacts = contacted >= 30 ? 0 : Math.max(0, 30 - contacted);
     const decision = pilots >= 1 ? 'Continue: paid signal found' : contacted >= 30 && demos < 3 ? 'Kill or reposition' : contacted >= 15 && replied < 3 ? 'Rewrite outreach' : 'Keep testing';
     const next = pilots >= 1
       ? 'Turn the paid pilot into a case study and ask for one referral.'
@@ -601,7 +606,7 @@ export default function App() {
           ? 'Rewrite the message around the buyer pain and send 10 more.'
           : 'Add targets, contact them, and track replies before building.';
 
-    return { total, contacted, replied, demos, pilots, no, replyRate, demoRate, pilotRate, decision, next };
+    return { total, contacted, replied, demos, pilots, no, replyRate, demoRate, pilotRate, proofScore, estimatedPilotRevenue, breakEvenContacts, decision, next };
   }, [validationRows]);
 
   // Contact Form State
@@ -1142,6 +1147,92 @@ Day 7: Publish the offer page and send 20 follow-ups.
     showToast('Validation target removed.');
   };
 
+  const getValidationNextAction = (row) => {
+    if (row.status === 'target') return 'Send the first validation message today.';
+    if (row.status === 'contacted') return 'Send follow-up 1 and ask for a quick yes/no.';
+    if (row.status === 'replied') return 'Ask one pain question, then offer a 10-minute demo.';
+    if (row.status === 'demo') return 'Ask for a paid pilot or a clear no.';
+    if (row.status === 'pilot') return 'Collect proof, testimonial, and a referral.';
+    return 'Record the objection and test a different buyer segment.';
+  };
+
+  const buildOutreachMessage = (row) => {
+    const name = row?.name || '[Name]';
+    const casualOpener = outreachTone === 'warm' ? `Hi ${name}, quick question.` : `Hi ${name},`;
+    const proofAsk = outreachTone === 'warm'
+      ? 'Would it be unreasonable to show you a rough example and get your honest reaction?'
+      : 'Would you pay for a 7-day pilot if this saved time on that workflow?';
+
+    if (row.status === 'target') {
+      return `${casualOpener} I am testing a small AI workflow for ${launchBuyer}. It helps with ${launchPain}. Are you currently handling this manually, or is it already solved for you?`;
+    }
+    if (row.status === 'contacted') {
+      return `Hi ${name}, following up once. If ${launchPain} is not a priority, no worries. If it is, ${proofAsk}`;
+    }
+    if (row.status === 'replied') {
+      return `Thanks ${name}. One useful question: how often does this happen, and what does it cost when it is delayed or done poorly? If the pain is real, I can show a simple ${launchDelivery} demo.`;
+    }
+    if (row.status === 'demo') {
+      return `${name}, based on the demo, I can set up a small pilot around ${launchDelivery}. The first version would focus only on ${launchPain}. Want to test it for one week?`;
+    }
+    if (row.status === 'pilot') {
+      return `${name}, if the pilot saved time or reduced friction, could I capture a short before/after note and ask who else has this same workflow problem?`;
+    }
+    return `Thanks ${name}. Helpful to know. What was the main reason this was not worth testing right now: timing, price, workflow pain, or trust?`;
+  };
+
+  const importBulkTargets = () => {
+    const rows = bulkTargets
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map((line, index) => {
+        const [name, channel, notes] = line.split(',').map(part => part?.trim() || '');
+        return {
+          id: `lead-${Date.now()}-bulk-${index}`,
+          niche: launchBuyer,
+          name: name || `Imported target ${index + 1}`,
+          channel: channel || validationChannel || 'Direct outreach',
+          status: 'target',
+          notes: notes || 'Imported buyer target. Replace with pain notes after outreach.',
+          updatedAt: new Date().toISOString().slice(0, 10)
+        };
+      });
+
+    if (rows.length === 0) {
+      showToast('Paste at least one buyer target first.');
+      return;
+    }
+
+    setValidationRows([...rows, ...validationRows]);
+    setBulkTargets('');
+    showToast(`Imported ${rows.length} buyer targets.`);
+  };
+
+  const exportValidationCsv = () => {
+    const escapeCsv = (value) => `"${String(value || '').replace(/"/g, '""')}"`;
+    const header = ['Name', 'Niche', 'Channel', 'Status', 'Next Action', 'Message', 'Notes', 'Updated'];
+    const lines = validationRows.map(row => [
+      row.name,
+      row.niche,
+      row.channel,
+      row.status,
+      getValidationNextAction(row),
+      buildOutreachMessage(row),
+      row.notes,
+      row.updatedAt
+    ].map(escapeCsv).join(','));
+    const csv = [header.map(escapeCsv).join(','), ...lines].join('\n');
+    const element = document.createElement('a');
+    const file = new Blob([csv], { type: 'text/csv' });
+    element.href = URL.createObjectURL(file);
+    element.download = 'AI_Niche_Validation_Targets.csv';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    showToast('Downloaded validation CSV.');
+  };
+
   const seedValidationTargets = () => {
     const baseChannel = (launchChannel.split(',')[0] || 'Direct outreach').trim();
     const seededRows = Array.from({ length: 10 }, (_, index) => ({
@@ -1177,6 +1268,8 @@ ${launchDelivery}
 - Reply rate: ${validationStats.replyRate}%
 - Demo rate: ${validationStats.demoRate}%
 - Pilot rate: ${validationStats.pilotRate}%
+- Proof score: ${validationStats.proofScore}/100
+- Estimated pilot revenue: $${validationStats.estimatedPilotRevenue}
 
 ## Decision
 ${validationStats.decision}
@@ -1191,6 +1284,9 @@ ${validationStats.next}
 
 ## Buyer Log
 ${rows || '- No validation rows yet.'}
+
+## Ready-To-Send Messages
+${validationRows.map(row => `### ${row.name}\nNext action: ${getValidationNextAction(row)}\n\n${buildOutreachMessage(row)}`).join('\n\n') || '- No buyer messages yet.'}
 `;
 
     const element = document.createElement('a');
@@ -2043,7 +2139,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                   <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Validation tracker</span>
                   <h2 className="text-2xl md:text-4xl font-black text-white mt-2">Prove buyers want this before you build.</h2>
                   <p className="text-sm text-slate-400 mt-3 max-w-2xl leading-relaxed">
-                    Track real outreach, replies, demos, and paid pilots. The app gives a continue, rewrite, or kill decision from actual buyer behavior.
+                    Import prospects, copy status-based outreach, track replies, and let buyer behavior decide whether to continue, rewrite, or kill the niche.
                   </p>
                 </div>
                 <div className={`border rounded-2xl p-4 min-w-[220px] ${
@@ -2063,13 +2159,31 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                   { label: 'Demos', value: validationStats.demos },
                   { label: 'Paid pilots', value: validationStats.pilots },
                   { label: 'Reply rate', value: `${validationStats.replyRate}%` },
-                  { label: 'Pilot rate', value: `${validationStats.pilotRate}%` }
+                  { label: 'Proof score', value: validationStats.proofScore }
                 ].map(metric => (
                   <div key={metric.label} className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
                     <div className="text-2xl font-black text-white">{metric.value}</div>
                     <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-1">{metric.label}</div>
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Estimated pilot revenue</div>
+                  <div className="text-2xl font-black text-emerald-300 mt-1">${validationStats.estimatedPilotRevenue}</div>
+                </div>
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Contacts to hard decision</div>
+                  <div className="text-2xl font-black text-white mt-1">{validationStats.breakEvenContacts}</div>
+                </div>
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Outreach tone</div>
+                  <select value={outreachTone} onChange={(e) => setOutreachTone(e.target.value)} className="mt-2 w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+                    <option value="direct">Direct validation</option>
+                    <option value="warm">Warm and soft</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -2111,7 +2225,21 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                     Seed 10
                   </button>
                   <button onClick={exportValidationReport} className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-4 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
-                    Export
+                    Export MD
+                  </button>
+                  <button onClick={exportValidationCsv} className="bg-slate-800 hover:bg-slate-700 text-white font-black px-4 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Export CSV
+                  </button>
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Bulk import</div>
+                    <p className="text-xs text-slate-500 mt-1">One per line. Format: name, channel, note.</p>
+                  </div>
+                  <textarea value={bulkTargets} onChange={(e) => setBulkTargets(e.target.value)} rows={5} placeholder={'Tanaka Dental Clinic, email, office manager\nSato Realty, LinkedIn, boutique agent'} className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
+                  <button onClick={importBulkTargets} className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-4 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Import Prospects
                   </button>
                 </div>
 
@@ -2152,6 +2280,15 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                             <input value={row.name} onChange={(e) => updateValidationRow(row.id, { name: e.target.value })} className="w-full bg-transparent text-sm font-black text-white focus:outline-none" />
                             <div className="text-[10px] text-slate-500 mt-1">Niche: {row.niche}</div>
                             <textarea value={row.notes} onChange={(e) => updateValidationRow(row.id, { notes: e.target.value })} rows={2} className="mt-2 w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500" />
+                            <div className="mt-3 bg-slate-900 border border-slate-800 rounded-xl p-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Next message</span>
+                                <button onClick={() => handleCopyText(buildOutreachMessage(row), 'Buyer message copied.')} className="text-[10px] font-black uppercase tracking-widest text-indigo-300 underline">
+                                  Copy
+                                </button>
+                              </div>
+                              <p className="text-xs text-slate-300 mt-2 leading-relaxed">{buildOutreachMessage(row)}</p>
+                            </div>
                           </div>
                           <input value={row.channel} onChange={(e) => updateValidationRow(row.id, { channel: e.target.value })} className="bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500" />
                           <select value={row.status} onChange={(e) => updateValidationRow(row.id, { status: e.target.value })} className="bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
@@ -2162,7 +2299,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                           </button>
                         </div>
                         <div className="mt-3 flex items-center justify-between text-[10px] text-slate-600">
-                          <span>{VALIDATION_STATUSES.find(status => status.id === row.status)?.label || row.status}</span>
+                          <span>{getValidationNextAction(row)}</span>
                           <span>Updated {row.updatedAt}</span>
                         </div>
                       </div>
