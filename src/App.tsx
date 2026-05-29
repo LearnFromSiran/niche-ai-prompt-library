@@ -301,6 +301,7 @@ This tool is for preparation only and is not insurance, legal, or cybersecurity 
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {activeView === 'assessment' && (
         <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="space-y-6">
             <div>
@@ -409,6 +410,7 @@ This tool is for preparation only and is not insurance, legal, or cybersecurity 
             </div>
           </div>
         </section>
+        )}
 
         {activeView === 'tasks' && (
           <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-5">
@@ -474,6 +476,7 @@ This tool is for preparation only and is not insurance, legal, or cybersecurity 
           </section>
         )}
 
+        {activeView === 'assessment' && (
         <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900 p-5">
           <h2 className="text-lg font-black text-white">Ad strategy for $200/month</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -489,6 +492,7 @@ This tool is for preparation only and is not insurance, legal, or cybersecurity 
             ))}
           </div>
         </section>
+        )}
 
         <p className="mt-6 text-center text-[11px] text-slate-600">
           Preparation tool only. Not insurance, legal, compliance, or cybersecurity advice. Speak with a licensed broker and qualified security professional.
