@@ -344,6 +344,15 @@ const USER_VALUE_MAP = [
   }
 ];
 
+const VALIDATION_STATUSES = [
+  { id: 'target', label: 'Target' },
+  { id: 'contacted', label: 'Contacted' },
+  { id: 'replied', label: 'Replied' },
+  { id: 'demo', label: 'Demo booked' },
+  { id: 'pilot', label: 'Paid pilot' },
+  { id: 'no', label: 'No' }
+];
+
 // ============================================================================
 // UTILITY HELPERS
 // ============================================================================
@@ -461,6 +470,20 @@ export default function App() {
   const [userAudience, setUserAudience] = useState('small business owners I can reach by email or social media');
   const [userGoal, setUserGoal] = useState('make the first $100-$500 from a narrow AI workflow');
   const [weeklyHours, setWeeklyHours] = useState(6);
+  const [validationRows, setValidationRows] = useState(() => {
+    try {
+      const saved = localStorage.getItem('niche_validation_rows');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+      return [];
+    } catch { return []; }
+  });
+  const [validationName, setValidationName] = useState('');
+  const [validationChannel, setValidationChannel] = useState('LinkedIn');
+  const [validationStatus, setValidationStatus] = useState('target');
+  const [validationNotes, setValidationNotes] = useState('');
 
   const userFitPlan = useMemo(() => {
     const skill = userSkill.toLowerCase();
@@ -558,6 +581,29 @@ export default function App() {
     };
   }, [launchBuyer, launchPain, launchBudget, launchDelivery, launchChannel]);
 
+  const validationStats = useMemo(() => {
+    const total = validationRows.length;
+    const count = (status: string) => validationRows.filter(row => row.status === status).length;
+    const contacted = validationRows.filter(row => ['contacted', 'replied', 'demo', 'pilot', 'no'].includes(row.status)).length;
+    const replied = validationRows.filter(row => ['replied', 'demo', 'pilot'].includes(row.status)).length;
+    const demos = count('demo') + count('pilot');
+    const pilots = count('pilot');
+    const no = count('no');
+    const replyRate = contacted ? Math.round((replied / contacted) * 100) : 0;
+    const demoRate = contacted ? Math.round((demos / contacted) * 100) : 0;
+    const pilotRate = contacted ? Math.round((pilots / contacted) * 100) : 0;
+    const decision = pilots >= 1 ? 'Continue: paid signal found' : contacted >= 30 && demos < 3 ? 'Kill or reposition' : contacted >= 15 && replied < 3 ? 'Rewrite outreach' : 'Keep testing';
+    const next = pilots >= 1
+      ? 'Turn the paid pilot into a case study and ask for one referral.'
+      : contacted >= 30 && demos < 3
+        ? 'Change buyer segment, pain, or offer before sending more messages.'
+        : contacted >= 15 && replied < 3
+          ? 'Rewrite the message around the buyer pain and send 10 more.'
+          : 'Add targets, contact them, and track replies before building.';
+
+    return { total, contacted, replied, demos, pilots, no, replyRate, demoRate, pilotRate, decision, next };
+  }, [validationRows]);
+
   // Contact Form State
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -585,6 +631,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('niche_lead_captured', leadCaptured ? 'true' : 'false');
   }, [leadCaptured]);
+
+  useEffect(() => {
+    localStorage.setItem('niche_validation_rows', JSON.stringify(validationRows));
+  }, [validationRows]);
 
   // Load placeholders whenever the selected prompt changes
   useEffect(() => {
@@ -1061,6 +1111,98 @@ Day 7: Publish the offer page and send 20 follow-ups.
     loadMicroNiche(userFitPlan.recommended);
   };
 
+  const addValidationRow = () => {
+    const name = validationName.trim();
+    if (!name) {
+      showToast('Add a buyer or company name first.');
+      return;
+    }
+
+    const row = {
+      id: `lead-${Date.now()}`,
+      niche: launchBuyer,
+      name,
+      channel: validationChannel.trim() || 'Direct outreach',
+      status: validationStatus,
+      notes: validationNotes.trim(),
+      updatedAt: new Date().toISOString().slice(0, 10)
+    };
+    setValidationRows([row, ...validationRows]);
+    setValidationName('');
+    setValidationNotes('');
+    showToast('Validation target added.');
+  };
+
+  const updateValidationRow = (id, updates) => {
+    setValidationRows(validationRows.map(row => row.id === id ? { ...row, ...updates, updatedAt: new Date().toISOString().slice(0, 10) } : row));
+  };
+
+  const removeValidationRow = (id) => {
+    setValidationRows(validationRows.filter(row => row.id !== id));
+    showToast('Validation target removed.');
+  };
+
+  const seedValidationTargets = () => {
+    const baseChannel = (launchChannel.split(',')[0] || 'Direct outreach').trim();
+    const seededRows = Array.from({ length: 10 }, (_, index) => ({
+      id: `lead-${Date.now()}-${index}`,
+      niche: launchBuyer,
+      name: `Target buyer ${index + 1}`,
+      channel: baseChannel,
+      status: 'target',
+      notes: `Find a real ${launchBuyer} contact and replace this placeholder.`,
+      updatedAt: new Date().toISOString().slice(0, 10)
+    }));
+    setValidationRows([...seededRows, ...validationRows]);
+    setActiveTab('tracker');
+    showToast('Seeded 10 validation targets.');
+  };
+
+  const exportValidationReport = () => {
+    const rows = validationRows.map(row => `- ${row.name} | ${row.channel} | ${row.status} | ${row.notes || 'No notes'} | ${row.updatedAt}`).join('\n');
+    const report = `# AI Niche Validation Tracker
+
+## Niche
+${launchBuyer}
+
+## Offer
+${launchDelivery}
+
+## Funnel Metrics
+- Targets: ${validationStats.total}
+- Contacted: ${validationStats.contacted}
+- Replies: ${validationStats.replied}
+- Demos or strong calls: ${validationStats.demos}
+- Paid pilots: ${validationStats.pilots}
+- Reply rate: ${validationStats.replyRate}%
+- Demo rate: ${validationStats.demoRate}%
+- Pilot rate: ${validationStats.pilotRate}%
+
+## Decision
+${validationStats.decision}
+
+## Next Action
+${validationStats.next}
+
+## Kill Rules
+- Kill or reposition if 30 contacted buyers produce fewer than 3 demos.
+- Rewrite the message if 15 contacted buyers produce fewer than 3 replies.
+- Continue only if buyers describe the pain clearly or one person pays for a pilot.
+
+## Buyer Log
+${rows || '- No validation rows yet.'}
+`;
+
+    const element = document.createElement('a');
+    const file = new Blob([report], { type: 'text/markdown' });
+    element.href = URL.createObjectURL(file);
+    element.download = 'AI_Niche_Validation_Tracker.md';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    showToast('Downloaded validation tracker report.');
+  };
+
   // ==========================================
   // LOCAL PROMPT QUALITY LAB
   // ==========================================
@@ -1254,6 +1396,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                 { id: 'hr', label: 'HR Professionals' },
                 { id: 'marketing', label: 'Marketers' },
                 { id: 'premium', label: 'Pro Formulas' },
+                { id: 'tracker', label: 'Validation Tracker' },
                 { id: 'tools', label: 'AI Software Directory' },
                 { id: 'pricing', label: 'Pricing' },
                 { id: 'contact', label: 'Contact Curation' }
@@ -1327,6 +1470,7 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
           { id: 'hr', label: 'HR Ops' },
           { id: 'marketing', label: 'Marketing' },
           { id: 'premium', label: 'Premium Pro' },
+          { id: 'tracker', label: 'Tracker' },
           { id: 'tools', label: 'AI Directory' },
           { id: 'pricing', label: 'Pricing' },
           { id: 'contact', label: 'Contact' }
@@ -1768,6 +1912,9 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
                   <button onClick={() => handleCopyText(launchBrief || 'Generate the launch brief first.', 'Launch brief copied.')} className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
                     Copy
                   </button>
+                  <button onClick={seedValidationTargets} className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-5 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Track Buyers
+                  </button>
                 </div>
               </div>
 
@@ -1888,8 +2035,147 @@ Add a final section asking the AI to produce "assumptions, risks, and next best 
           </div>
         )}
 
+        {activeTab === 'tracker' && (
+          <div className="space-y-6">
+            <div className="bg-slate-900 border border-emerald-500/20 rounded-3xl p-6 md:p-8">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300">Validation tracker</span>
+                  <h2 className="text-2xl md:text-4xl font-black text-white mt-2">Prove buyers want this before you build.</h2>
+                  <p className="text-sm text-slate-400 mt-3 max-w-2xl leading-relaxed">
+                    Track real outreach, replies, demos, and paid pilots. The app gives a continue, rewrite, or kill decision from actual buyer behavior.
+                  </p>
+                </div>
+                <div className={`border rounded-2xl p-4 min-w-[220px] ${
+                  validationStats.pilots > 0 ? 'bg-emerald-500/10 border-emerald-400/30' : validationStats.contacted >= 30 && validationStats.demos < 3 ? 'bg-rose-500/10 border-rose-400/30' : 'bg-amber-500/10 border-amber-400/30'
+                }`}>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Decision</div>
+                  <div className="text-xl font-black text-white mt-1">{validationStats.decision}</div>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">{validationStats.next}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 mt-6">
+                {[
+                  { label: 'Targets', value: validationStats.total },
+                  { label: 'Contacted', value: validationStats.contacted },
+                  { label: 'Replies', value: validationStats.replied },
+                  { label: 'Demos', value: validationStats.demos },
+                  { label: 'Paid pilots', value: validationStats.pilots },
+                  { label: 'Reply rate', value: `${validationStats.replyRate}%` },
+                  { label: 'Pilot rate', value: `${validationStats.pilotRate}%` }
+                ].map(metric => (
+                  <div key={metric.label} className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                    <div className="text-2xl font-black text-white">{metric.value}</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-1">{metric.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4">
+                <div>
+                  <h3 className="font-black text-white">Add buyer target</h3>
+                  <p className="text-xs text-slate-500 mt-1">Use real names or companies. Placeholder targets are only for planning.</p>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Buyer or company</label>
+                    <input value={validationName} onChange={(e) => setValidationName(e.target.value)} placeholder="e.g. Tanaka Dental Clinic" className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Channel</label>
+                      <input value={validationChannel} onChange={(e) => setValidationChannel(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Status</label>
+                      <select value={validationStatus} onChange={(e) => setValidationStatus(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+                        {VALIDATION_STATUSES.map(status => <option key={status.id} value={status.id}>{status.label}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Notes</label>
+                    <textarea value={validationNotes} onChange={(e) => setValidationNotes(e.target.value)} rows={4} placeholder="Pain quote, reply, objection, demo notes, price reaction..." className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={addValidationRow} className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-4 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Add Target
+                  </button>
+                  <button onClick={seedValidationTargets} className="bg-slate-800 hover:bg-slate-700 text-white font-black px-4 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Seed 10
+                  </button>
+                  <button onClick={exportValidationReport} className="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-4 py-3 rounded-xl transition-all text-xs tracking-wider uppercase">
+                    Export
+                  </button>
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Current niche</div>
+                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">{launchBuyer}</p>
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">{launchPain}</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                  <div>
+                    <h3 className="font-black text-white">Buyer validation log</h3>
+                    <p className="text-xs text-slate-500 mt-1">Move each buyer through the funnel. Paid pilot is the strongest signal.</p>
+                  </div>
+                  <button onClick={() => {
+                    if (window.confirm('Clear all validation targets from this browser?')) {
+                      setValidationRows([]);
+                      showToast('Validation tracker cleared.');
+                    }
+                  }} className="text-[10px] font-black uppercase tracking-widest text-rose-300 underline">
+                    Clear tracker
+                  </button>
+                </div>
+
+                {validationRows.length === 0 ? (
+                  <div className="border border-dashed border-slate-700 rounded-2xl p-8 text-center">
+                    <h4 className="font-black text-white">No buyer targets yet</h4>
+                    <p className="text-xs text-slate-500 mt-2 max-w-md mx-auto">Add 10-30 real buyers, contact them, and let the funnel decide if the niche deserves more work.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {validationRows.map(row => (
+                      <div key={row.id} className="bg-slate-950 border border-slate-800 rounded-2xl p-4">
+                        <div className="grid grid-cols-1 xl:grid-cols-[1fr_150px_150px_40px] gap-3 items-start">
+                          <div>
+                            <input value={row.name} onChange={(e) => updateValidationRow(row.id, { name: e.target.value })} className="w-full bg-transparent text-sm font-black text-white focus:outline-none" />
+                            <div className="text-[10px] text-slate-500 mt-1">Niche: {row.niche}</div>
+                            <textarea value={row.notes} onChange={(e) => updateValidationRow(row.id, { notes: e.target.value })} rows={2} className="mt-2 w-full bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500" />
+                          </div>
+                          <input value={row.channel} onChange={(e) => updateValidationRow(row.id, { channel: e.target.value })} className="bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500" />
+                          <select value={row.status} onChange={(e) => updateValidationRow(row.id, { status: e.target.value })} className="bg-slate-900 border border-slate-800 rounded-xl p-2 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+                            {VALIDATION_STATUSES.map(status => <option key={status.id} value={status.id}>{status.label}</option>)}
+                          </select>
+                          <button onClick={() => removeValidationRow(row.id)} className="bg-slate-900 hover:bg-rose-500/10 text-slate-500 hover:text-rose-300 border border-slate-800 rounded-xl p-2 text-xs font-black">
+                            X
+                          </button>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between text-[10px] text-slate-600">
+                          <span>{VALIDATION_STATUSES.find(status => status.id === row.status)?.label || row.status}</span>
+                          <span>Updated {row.updatedAt}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Master Catalog Layout Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className={`${activeTab === 'tracker' ? 'hidden' : 'grid'} grid-cols-1 lg:grid-cols-12 gap-8 items-start`}>
           
           {/* LEFT SECTION (7 Columns): Content Catalogs, Tabs & Playbooks */}
           <div className="lg:col-span-7 space-y-8">
